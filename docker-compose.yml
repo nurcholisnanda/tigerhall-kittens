@@ -1,0 +1,36 @@
+version: "3.8"
+services:
+  # Apps container
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tigerhall-kittens
+    ports:
+      - 8080:8080
+    restart: on-failure
+    depends_on:
+      - postgres
+    networks:
+      - project_network
+
+  # Database container
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres      
+      - POSTGRES_PASSWORD=password  
+      - POSTGRES_DB=tigerhall_kittens        
+    volumes:
+      - database_postgres:/var/lib/postgresql/data
+    networks:
+      - project_network
+
+volumes:
+  database_postgres:
+networks:
+  project_network:
+    driver: bridge
