@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
 )
 
 func TestNewJWT(t *testing.T) {
@@ -92,7 +93,7 @@ func Test_authClient_ValidateToken(t *testing.T) {
 	token, err := JWT.GenerateToken(ctx, userID)
 
 	expiredClaims := jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * -24))}
-	expiredCustomClaims := JwtCustomClaim{
+	expiredCustomClaims := helper.JwtCustomClaim{
 		ID:               userID,
 		RegisteredClaims: expiredClaims,
 	}

@@ -138,3 +138,41 @@ func (mr *MockUserServiceMockRecorder) Register(ctx, input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockUserService)(nil).Register), ctx, input)
 }
+
+// MockTigerService is a mock of TigerService interface.
+type MockTigerService struct {
+	ctrl     *gomock.Controller
+	recorder *MockTigerServiceMockRecorder
+}
+
+// MockTigerServiceMockRecorder is the mock recorder for MockTigerService.
+type MockTigerServiceMockRecorder struct {
+	mock *MockTigerService
+}
+
+// NewMockTigerService creates a new mock instance.
+func NewMockTigerService(ctrl *gomock.Controller) *MockTigerService {
+	mock := &MockTigerService{ctrl: ctrl}
+	mock.recorder = &MockTigerServiceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTigerService) EXPECT() *MockTigerServiceMockRecorder {
+	return m.recorder
+}
+
+// CreateTiger mocks base method.
+func (m *MockTigerService) CreateTiger(ctx context.Context, input model.TigerInput) (*model.Tiger, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTiger", ctx, input)
+	ret0, _ := ret[0].(*model.Tiger)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateTiger indicates an expected call of CreateTiger.
+func (mr *MockTigerServiceMockRecorder) CreateTiger(ctx, input any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTiger", reflect.TypeOf((*MockTigerService)(nil).CreateTiger), ctx, input)
+}

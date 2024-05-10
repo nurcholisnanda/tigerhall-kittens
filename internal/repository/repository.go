@@ -13,12 +13,7 @@ type UserRepository interface {
 	FindUserByEmail(ctx context.Context, email string) (*model.User, error)
 }
 
-// type TigerRepository interface {
-// 	Create(tiger *model.Tiger) error
-// 	FindAll() ([]model.Tiger, error)
-// }
-
-// type SightingRepository interface {
-// 	Create(tiger *model.Sighting) error
-// 	FindAll() ([]model.Sighting, error)
-// }
+//go:generate mockgen -source=repository.go -destination=mock/repository.go -package=mock
+type TigerRepository interface {
+	Create(ctx context.Context, tiger *model.Tiger) error
+}

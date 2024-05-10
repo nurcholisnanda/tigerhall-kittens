@@ -7,6 +7,8 @@ directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | I
 directive @auth on FIELD_DEFINITION
 
 scalar Any
+scalar Time
+scalar DateTime
 
 type User {
   id: ID!
@@ -18,6 +20,31 @@ input NewUser {
   name: String!
   email: String!
   password: String!
+}
+
+type Tiger {
+  id: ID!
+  name: String!
+  dateOfBirth: Time!
+  lastSeenTime: Time!
+  lastSeenCoordinate:LastSeenCoordinate!
+}
+
+type LastSeenCoordinate {
+  latitude: Float!
+  longitude: Float!
+}
+
+input TigerInput {
+  name: String!
+  dateOfBirth: Time!
+  lastSeenTime: Time!
+  lastSeenCoordinate: LastSeenCoordinateInput!
+}
+
+input LastSeenCoordinateInput {
+  latitude: Float!
+  longitude: Float!
 }
 
 type AuthOps {
@@ -34,4 +61,5 @@ type Query {
 
 type Mutation {
   auth: AuthOps! @goField(forceResolver: true)
+  createTiger(input: TigerInput!): Tiger! @goField(forceResolver: true) @auth
 }

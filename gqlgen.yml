@@ -4,13 +4,14 @@ schema:
 
 # Where should the generated server code go?
 exec:
-  filename: internal/api/graph/generated/generated.go
+  filename: internal/api/graph/generated.go
   package: graph
 
 # Uncomment to enable federation
 # federation:
-#   filename: graph/federation.go
+#   filename: internal/api/graph/federation.go
 #   package: graph
+#   version: 2
 
 # Where should any generated models go?
 model:

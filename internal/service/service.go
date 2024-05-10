@@ -18,3 +18,7 @@ type UserService interface {
 	Login(ctx context.Context, email string, password string) (interface{}, error)
 	GetUserByID(ctx context.Context, id string) (*model.User, error)
 }
+
+type TigerService interface {
+	CreateTiger(ctx context.Context, input model.TigerInput) (*model.Tiger, error)
+}

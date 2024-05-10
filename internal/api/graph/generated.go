@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -54,13 +55,27 @@ type ComplexityRoot struct {
 		Register func(childComplexity int, input model.NewUser) int
 	}
 
+	LastSeenCoordinate struct {
+		Latitude  func(childComplexity int) int
+		Longitude func(childComplexity int) int
+	}
+
 	Mutation struct {
-		Auth func(childComplexity int) int
+		Auth        func(childComplexity int) int
+		CreateTiger func(childComplexity int, input model.TigerInput) int
 	}
 
 	Query struct {
 		Protected func(childComplexity int) int
 		User      func(childComplexity int, id string) int
+	}
+
+	Tiger struct {
+		DateOfBirth        func(childComplexity int) int
+		ID                 func(childComplexity int) int
+		LastSeenCoordinate func(childComplexity int) int
+		LastSeenTime       func(childComplexity int) int
+		Name               func(childComplexity int) int
 	}
 
 	User struct {
@@ -76,6 +91,7 @@ type AuthOpsResolver interface {
 }
 type MutationResolver interface {
 	Auth(ctx context.Context) (*model.AuthOps, error)
+	CreateTiger(ctx context.Context, input model.TigerInput) (*model.Tiger, error)
 }
 type QueryResolver interface {
 	User(ctx context.Context, id string) (*model.User, error)
@@ -125,12 +141,38 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AuthOps.Register(childComplexity, args["input"].(model.NewUser)), true
 
+	case "LastSeenCoordinate.latitude":
+		if e.complexity.LastSeenCoordinate.Latitude == nil {
+			break
+		}
+
+		return e.complexity.LastSeenCoordinate.Latitude(childComplexity), true
+
+	case "LastSeenCoordinate.longitude":
+		if e.complexity.LastSeenCoordinate.Longitude == nil {
+			break
+		}
+
+		return e.complexity.LastSeenCoordinate.Longitude(childComplexity), true
+
 	case "Mutation.auth":
 		if e.complexity.Mutation.Auth == nil {
 			break
 		}
 
 		return e.complexity.Mutation.Auth(childComplexity), true
+
+	case "Mutation.createTiger":
+		if e.complexity.Mutation.CreateTiger == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTiger_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTiger(childComplexity, args["input"].(model.TigerInput)), true
 
 	case "Query.protected":
 		if e.complexity.Query.Protected == nil {
@@ -150,6 +192,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.User(childComplexity, args["id"].(string)), true
+
+	case "Tiger.dateOfBirth":
+		if e.complexity.Tiger.DateOfBirth == nil {
+			break
+		}
+
+		return e.complexity.Tiger.DateOfBirth(childComplexity), true
+
+	case "Tiger.id":
+		if e.complexity.Tiger.ID == nil {
+			break
+		}
+
+		return e.complexity.Tiger.ID(childComplexity), true
+
+	case "Tiger.lastSeenCoordinate":
+		if e.complexity.Tiger.LastSeenCoordinate == nil {
+			break
+		}
+
+		return e.complexity.Tiger.LastSeenCoordinate(childComplexity), true
+
+	case "Tiger.lastSeenTime":
+		if e.complexity.Tiger.LastSeenTime == nil {
+			break
+		}
+
+		return e.complexity.Tiger.LastSeenTime(childComplexity), true
+
+	case "Tiger.name":
+		if e.complexity.Tiger.Name == nil {
+			break
+		}
+
+		return e.complexity.Tiger.Name(childComplexity), true
 
 	case "User.email":
 		if e.complexity.User.Email == nil {
@@ -180,7 +257,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputLastSeenCoordinateInput,
 		ec.unmarshalInputNewUser,
+		ec.unmarshalInputTigerInput,
 	)
 	first := true
 
@@ -327,7 +406,22 @@ func (ec *executionContext) field_AuthOps_register_args(ctx context.Context, raw
 	var arg0 model.NewUser
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewUser2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋgraphᚋmodelᚐNewUser(ctx, tmp)
+		arg0, err = ec.unmarshalNNewUser2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐNewUser(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createTiger_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.TigerInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNTigerInput2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐTigerInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -514,6 +608,94 @@ func (ec *executionContext) fieldContext_AuthOps_register(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _LastSeenCoordinate_latitude(ctx context.Context, field graphql.CollectedField, obj *model.LastSeenCoordinate) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LastSeenCoordinate_latitude(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Latitude, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LastSeenCoordinate_latitude(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LastSeenCoordinate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LastSeenCoordinate_longitude(ctx context.Context, field graphql.CollectedField, obj *model.LastSeenCoordinate) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LastSeenCoordinate_longitude(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Longitude, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LastSeenCoordinate_longitude(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LastSeenCoordinate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_auth(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_auth(ctx, field)
 	if err != nil {
@@ -542,7 +724,7 @@ func (ec *executionContext) _Mutation_auth(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(*model.AuthOps)
 	fc.Result = res
-	return ec.marshalNAuthOps2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋgraphᚋmodelᚐAuthOps(ctx, field.Selections, res)
+	return ec.marshalNAuthOps2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐAuthOps(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_auth(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -560,6 +742,93 @@ func (ec *executionContext) fieldContext_Mutation_auth(_ context.Context, field 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type AuthOps", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createTiger(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createTiger(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateTiger(rctx, fc.Args["input"].(model.TigerInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.Tiger); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model.Tiger`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Tiger)
+	fc.Result = res
+	return ec.marshalNTiger2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐTiger(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createTiger(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Tiger_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Tiger_name(ctx, field)
+			case "dateOfBirth":
+				return ec.fieldContext_Tiger_dateOfBirth(ctx, field)
+			case "lastSeenTime":
+				return ec.fieldContext_Tiger_lastSeenTime(ctx, field)
+			case "lastSeenCoordinate":
+				return ec.fieldContext_Tiger_lastSeenCoordinate(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tiger", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createTiger_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -592,7 +861,7 @@ func (ec *executionContext) _Query_user(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -815,6 +1084,232 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tiger_id(ctx context.Context, field graphql.CollectedField, obj *model.Tiger) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tiger_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tiger_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tiger",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tiger_name(ctx context.Context, field graphql.CollectedField, obj *model.Tiger) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tiger_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tiger_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tiger",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tiger_dateOfBirth(ctx context.Context, field graphql.CollectedField, obj *model.Tiger) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tiger_dateOfBirth(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DateOfBirth, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tiger_dateOfBirth(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tiger",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tiger_lastSeenTime(ctx context.Context, field graphql.CollectedField, obj *model.Tiger) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tiger_lastSeenTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LastSeenTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tiger_lastSeenTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tiger",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tiger_lastSeenCoordinate(ctx context.Context, field graphql.CollectedField, obj *model.Tiger) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tiger_lastSeenCoordinate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LastSeenCoordinate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.LastSeenCoordinate)
+	fc.Result = res
+	return ec.marshalNLastSeenCoordinate2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐLastSeenCoordinate(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tiger_lastSeenCoordinate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tiger",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "latitude":
+				return ec.fieldContext_LastSeenCoordinate_latitude(ctx, field)
+			case "longitude":
+				return ec.fieldContext_LastSeenCoordinate_longitude(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LastSeenCoordinate", field.Name)
 		},
 	}
 	return fc, nil
@@ -2725,6 +3220,40 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputLastSeenCoordinateInput(ctx context.Context, obj interface{}) (model.LastSeenCoordinateInput, error) {
+	var it model.LastSeenCoordinateInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"latitude", "longitude"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "latitude":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("latitude"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Latitude = data
+		case "longitude":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("longitude"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Longitude = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj interface{}) (model.NewUser, error) {
 	var it model.NewUser
 	asMap := map[string]interface{}{}
@@ -2760,6 +3289,54 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 				return it, err
 			}
 			it.Password = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputTigerInput(ctx context.Context, obj interface{}) (model.TigerInput, error) {
+	var it model.TigerInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "dateOfBirth", "lastSeenTime", "lastSeenCoordinate"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "dateOfBirth":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dateOfBirth"))
+			data, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DateOfBirth = data
+		case "lastSeenTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastSeenTime"))
+			data, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastSeenTime = data
+		case "lastSeenCoordinate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastSeenCoordinate"))
+			data, err := ec.unmarshalNLastSeenCoordinateInput2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐLastSeenCoordinateInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LastSeenCoordinate = data
 		}
 	}
 
@@ -2880,6 +3457,50 @@ func (ec *executionContext) _AuthOps(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var lastSeenCoordinateImplementors = []string{"LastSeenCoordinate"}
+
+func (ec *executionContext) _LastSeenCoordinate(ctx context.Context, sel ast.SelectionSet, obj *model.LastSeenCoordinate) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, lastSeenCoordinateImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LastSeenCoordinate")
+		case "latitude":
+			out.Values[i] = ec._LastSeenCoordinate_latitude(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "longitude":
+			out.Values[i] = ec._LastSeenCoordinate_longitude(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -2902,6 +3523,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "auth":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_auth(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createTiger":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createTiger(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -3000,6 +3628,65 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var tigerImplementors = []string{"Tiger"}
+
+func (ec *executionContext) _Tiger(ctx context.Context, sel ast.SelectionSet, obj *model.Tiger) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tigerImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Tiger")
+		case "id":
+			out.Values[i] = ec._Tiger_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Tiger_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "dateOfBirth":
+			out.Values[i] = ec._Tiger_dateOfBirth(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "lastSeenTime":
+			out.Values[i] = ec._Tiger_lastSeenTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "lastSeenCoordinate":
+			out.Values[i] = ec._Tiger_lastSeenCoordinate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3419,11 +4106,11 @@ func (ec *executionContext) marshalNAny2interface(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNAuthOps2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋgraphᚋmodelᚐAuthOps(ctx context.Context, sel ast.SelectionSet, v model.AuthOps) graphql.Marshaler {
+func (ec *executionContext) marshalNAuthOps2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐAuthOps(ctx context.Context, sel ast.SelectionSet, v model.AuthOps) graphql.Marshaler {
 	return ec._AuthOps(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAuthOps2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋgraphᚋmodelᚐAuthOps(ctx context.Context, sel ast.SelectionSet, v *model.AuthOps) graphql.Marshaler {
+func (ec *executionContext) marshalNAuthOps2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐAuthOps(ctx context.Context, sel ast.SelectionSet, v *model.AuthOps) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -3448,6 +4135,21 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloatContext(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3463,7 +4165,22 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋgraphᚋmodelᚐNewUser(ctx context.Context, v interface{}) (model.NewUser, error) {
+func (ec *executionContext) marshalNLastSeenCoordinate2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐLastSeenCoordinate(ctx context.Context, sel ast.SelectionSet, v *model.LastSeenCoordinate) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._LastSeenCoordinate(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNLastSeenCoordinateInput2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐLastSeenCoordinateInput(ctx context.Context, v interface{}) (*model.LastSeenCoordinateInput, error) {
+	res, err := ec.unmarshalInputLastSeenCoordinateInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐNewUser(ctx context.Context, v interface{}) (model.NewUser, error) {
 	res, err := ec.unmarshalInputNewUser(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -3483,11 +4200,45 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNTiger2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐTiger(ctx context.Context, sel ast.SelectionSet, v model.Tiger) graphql.Marshaler {
+	return ec._Tiger(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTiger2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐTiger(ctx context.Context, sel ast.SelectionSet, v *model.Tiger) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Tiger(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNTigerInput2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐTigerInput(ctx context.Context, v interface{}) (model.TigerInput, error) {
+	res, err := ec.unmarshalInputTigerInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	res, err := graphql.UnmarshalTime(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	res := graphql.MarshalTime(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) marshalNUser2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

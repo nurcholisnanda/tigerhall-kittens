@@ -83,3 +83,40 @@ func (mr *MockUserRepositoryMockRecorder) FindUserByID(ctx, id any) *gomock.Call
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindUserByID", reflect.TypeOf((*MockUserRepository)(nil).FindUserByID), ctx, id)
 }
+
+// MockTigerRepository is a mock of TigerRepository interface.
+type MockTigerRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockTigerRepositoryMockRecorder
+}
+
+// MockTigerRepositoryMockRecorder is the mock recorder for MockTigerRepository.
+type MockTigerRepositoryMockRecorder struct {
+	mock *MockTigerRepository
+}
+
+// NewMockTigerRepository creates a new mock instance.
+func NewMockTigerRepository(ctrl *gomock.Controller) *MockTigerRepository {
+	mock := &MockTigerRepository{ctrl: ctrl}
+	mock.recorder = &MockTigerRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTigerRepository) EXPECT() *MockTigerRepositoryMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockTigerRepository) Create(ctx context.Context, tiger *model.Tiger) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, tiger)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockTigerRepositoryMockRecorder) Create(ctx, tiger any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTigerRepository)(nil).Create), ctx, tiger)
+}

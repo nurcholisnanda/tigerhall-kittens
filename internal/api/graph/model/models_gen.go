@@ -2,9 +2,18 @@
 
 package model
 
+import (
+	"time"
+)
+
 type AuthOps struct {
 	Login    interface{} `json:"login"`
 	Register interface{} `json:"register"`
+}
+
+type LastSeenCoordinateInput struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }
 
 type Mutation struct {
@@ -17,4 +26,11 @@ type NewUser struct {
 }
 
 type Query struct {
+}
+
+type TigerInput struct {
+	Name               string                   `json:"name"`
+	DateOfBirth        time.Time                `json:"dateOfBirth"`
+	LastSeenTime       time.Time                `json:"lastSeenTime"`
+	LastSeenCoordinate *LastSeenCoordinateInput `json:"lastSeenCoordinate"`
 }

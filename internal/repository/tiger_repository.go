@@ -1,25 +1,32 @@
 package repository
 
-// import (
-// 	"github.com/nurcholisnanda/tigerhall-kittens/internal/domain/model"
-// 	"github.com/nurcholisnanda/tigerhall-kittens/internal/domain/repository"
-// 	"gorm.io/gorm"
-// )
+import (
+	"context"
 
-// type TigerRepositoryImpl struct {
-// 	db *gorm.DB
-// }
+	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
+	"gorm.io/gorm"
+)
 
-// func NewTigerRepositoryImpl(db *gorm.DB) repository.TigerRepository {
-// 	return &TigerRepositoryImpl{
-// 		db: db,
-// 	}
-// }
+type TigerRepositoryImpl struct {
+	db *gorm.DB
+}
 
-// func (r *TigerRepositoryImpl) Create(tiger *model.Tiger) error {
-// 	// Add implementation to persist tiger data in the database
-// 	return nil
-// }
+func NewTigerRepositoryImpl(db *gorm.DB) TigerRepository {
+	return &TigerRepositoryImpl{
+		db: db,
+	}
+}
+
+func (r *TigerRepositoryImpl) Create(ctx context.Context, tiger *model.Tiger) error {
+	userId, err := helper.GetUserID(ctx)
+	if err != nil {
+		logger.Logger(ctx).Error("failed to get user id")
+	}
+	tiger.CreatedBy = userId
+	return r.db.WithContext(ctx).Create(tiger).Error
+}
 
 // func (r *TigerRepositoryImpl) FindAll() ([]model.Tiger, error) {
 // 	// Add implementation to retrieve all tigers from the database

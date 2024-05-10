@@ -7,12 +7,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
 )
-
-type JwtCustomClaim struct {
-	ID string `json:"id"`
-	jwt.RegisteredClaims
-}
 
 type authClient struct {
 	secret string
@@ -39,7 +35,7 @@ func (c *authClient) GenerateToken(ctx context.Context, userID string) (string, 
 		IssuedAt:  jwt.NewNumericDate(currentTime),
 	}
 
-	claims := JwtCustomClaim{
+	claims := helper.JwtCustomClaim{
 		ID:               userID,
 		RegisteredClaims: accessTokenClaims,
 	}
@@ -58,14 +54,14 @@ func (c *authClient) GenerateToken(ctx context.Context, userID string) (string, 
 // and will return claims if the user is exist in our database
 // otherwise it will return error
 func (c *authClient) ValidateToken(ctx context.Context, requestToken string) (*jwt.Token, error) {
-	token, _ := jwt.ParseWithClaims(requestToken, &JwtCustomClaim{}, func(t *jwt.Token) (interface{}, error) {
+	token, _ := jwt.ParseWithClaims(requestToken, &helper.JwtCustomClaim{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("there's a problem with the signing method")
 		}
 		return []byte(c.secret), nil
 	})
 
-	claims, ok := token.Claims.(*JwtCustomClaim)
+	claims, ok := token.Claims.(*helper.JwtCustomClaim)
 	if !ok {
 		return nil, errors.New("fail to claim token")
 	}

@@ -9,5 +9,6 @@ import "github.com/nurcholisnanda/tigerhall-kittens/internal/service"
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	UserSvc service.UserService
+	UserSvc  service.UserService
+	TigerSvc service.TigerService
 }

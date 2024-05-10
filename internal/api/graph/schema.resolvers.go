@@ -8,6 +8,9 @@ import (
 	"context"
 
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Login is the resolver for the login field.
@@ -23,6 +26,53 @@ func (r *authOpsResolver) Register(ctx context.Context, obj *model.AuthOps, inpu
 // Auth is the resolver for the auth field.
 func (r *mutationResolver) Auth(ctx context.Context) (*model.AuthOps, error) {
 	return &model.AuthOps{}, nil
+}
+
+// CreateTiger is the resolver for the createTiger field.
+func (r *mutationResolver) CreateTiger(ctx context.Context, input model.TigerInput) (*model.Tiger, error) {
+	tiger, err := r.TigerSvc.CreateTiger(ctx, input)
+	if err != nil {
+		switch err.(type) {
+		case *errors.InvalidCoordinatesError:
+			return nil, &gqlerror.Error{
+				Message: "invalid coordinates",
+				Extensions: map[string]interface{}{
+					"code":    errors.INVALID_INPUT,
+					"details": err.Error(),
+				},
+			}
+		case *errors.InvalidDateOfBirthError:
+			return nil, &gqlerror.Error{
+				Message: "invalid date of birth",
+				Extensions: map[string]interface{}{
+					"code":    errors.INVALID_INPUT,
+					"details": err.Error(),
+				},
+			}
+		case *errors.InvalidLastSeenTimeError:
+			return nil, &gqlerror.Error{
+				Message: "invalid last seen time",
+				Extensions: map[string]interface{}{
+					"code":    errors.INVALID_INPUT,
+					"details": err.Error(),
+				},
+			}
+		case *errors.TigerCreationError:
+			return nil, &gqlerror.Error{
+				Message: "failed to create tiger",
+				Extensions: map[string]interface{}{
+					"code":    errors.INVALID_INPUT,
+					"details": err.Error(),
+				},
+			}
+		default:
+			// Log the unexpected error for investigation
+			logrus.Error(ctx, "Unexpected error creating tiger", "error:", err.Error())
+			return nil, gqlerror.Errorf("Internal Server Error")
+		}
+	}
+
+	return tiger, nil
 }
 
 // User is the resolver for the user field.
