@@ -25,14 +25,14 @@ func NewUserService(userRepo repository.UserRepository, bcrypt bcrypt.BcryptInte
 	}
 }
 
-func (s *userService) Register(ctx context.Context, input model.NewUser) (interface{}, error) {
+func (s *userService) Register(ctx context.Context, input *model.NewUser) (interface{}, error) {
 	//hashing password
 	hashedPassword, err := s.bcrypt.HashPassword(input.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := s.userRepo.FindUserByEmail(ctx, input.Email)
+	user, err := s.userRepo.GetUserByEmail(ctx, input.Email)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (s *userService) Register(ctx context.Context, input model.NewUser) (interf
 }
 
 func (s *userService) Login(ctx context.Context, email string, password string) (interface{}, error) {
-	user, err := s.userRepo.FindUserByEmail(ctx, email)
+	user, err := s.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
@@ -80,5 +80,5 @@ func (s *userService) Login(ctx context.Context, email string, password string) 
 }
 
 func (s *userService) GetUserByID(ctx context.Context, id string) (*model.User, error) {
-	return s.userRepo.FindUserByID(ctx, id)
+	return s.userRepo.GetUserByID(ctx, id)
 }

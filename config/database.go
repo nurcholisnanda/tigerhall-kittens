@@ -44,5 +44,5 @@ func (r *database) GetDB() *gorm.DB {
 
 // AutoMigrate performs automatic schema migration for defined models.
 func (r *database) AutoMigrate() error {
-	return r.db.AutoMigrate(&model.User{}, &model.Tiger{})
+	return r.db.AutoMigrate(&model.User{}, &model.Tiger{}, &model.Sighting{})
 }

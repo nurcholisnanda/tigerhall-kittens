@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
-	"github.com/nurcholisnanda/tigerhall-kittens/pkg/errors"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
 )
 
@@ -25,22 +25,22 @@ func NewTigerService(tigerRepo repository.TigerRepository) TigerService {
 }
 
 // CreateTiger Function
-func (s *tigerService) CreateTiger(ctx context.Context, input model.TigerInput) (*model.Tiger, error) {
+func (s *tigerService) CreateTiger(ctx context.Context, input *model.TigerInput) (*model.Tiger, error) {
 	// Validations
 	if !isValidLatitude(input.LastSeenCoordinate.Latitude) || !isValidLongitude(input.LastSeenCoordinate.Longitude) {
-		return nil, &errors.InvalidCoordinatesError{
+		return nil, &helper.InvalidCoordinatesError{
 			Message: "latitude must be between -90 and 90, longitude between -180 and 180",
 		}
 	}
 
 	if input.DateOfBirth.After(time.Now()) {
-		return nil, &errors.InvalidDateOfBirthError{
+		return nil, &helper.InvalidDateOfBirthError{
 			Message: "date of birth cannot be in the future",
 		}
 	}
 
 	if input.LastSeenTime.After(time.Now()) {
-		return nil, &errors.InvalidLastSeenTimeError{
+		return nil, &helper.InvalidLastSeenTimeError{
 			Message: "last seen time cannot be in the future",
 		}
 	}
@@ -57,17 +57,25 @@ func (s *tigerService) CreateTiger(ctx context.Context, input model.TigerInput) 
 	// Database Interaction
 	if err := s.tigerRepo.Create(ctx, tiger); err != nil {
 		if strings.Contains(err.Error(), "unique constraint") {
-			logger.Logger(ctx).Error("a tiger with the name already exists", err)
-			return nil, &errors.TigerCreationError{
+			return nil, &helper.TigerCreationError{
 				Field:   "name",
 				Message: fmt.Sprintf("a tiger with the name %s already exists", input.Name),
 			}
 		}
-		logger.Logger(ctx).Error("Unexpected error creating tiger", err)
-		return nil, errors.ErrInternalServer
+		logger.Logger(ctx).Error("unexpected error creating tiger", err)
+		return nil, helper.ErrInternalServer
 	}
 
 	return tiger, nil
+}
+
+func (s *tigerService) ListTigers(ctx context.Context, limit int, offset int) ([]*model.Tiger, error) {
+	tigers, err := s.tigerRepo.ListTigers(ctx, limit, offset)
+	if err != nil {
+		logger.Logger(ctx).Error("unexpected error creating tiger", err)
+		return nil, fmt.Errorf("unexpected error listing tigers : %v", err.Error())
+	}
+	return tigers, nil
 }
 
 // Helper Validation Functions

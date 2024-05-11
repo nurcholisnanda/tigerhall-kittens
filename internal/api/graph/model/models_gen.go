@@ -4,6 +4,8 @@ package model
 
 import (
 	"time"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 type AuthOps struct {
@@ -11,9 +13,19 @@ type AuthOps struct {
 	Register interface{} `json:"register"`
 }
 
+type CreateOps struct {
+	CreateSighting *Sighting `json:"createSighting"`
+	CreateTiger    *Tiger    `json:"createTiger"`
+}
+
 type LastSeenCoordinateInput struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
+}
+
+type ListOps struct {
+	ListTigers    []*Tiger    `json:"listTigers"`
+	ListSightings []*Sighting `json:"listSightings"`
 }
 
 type Mutation struct {
@@ -26,6 +38,13 @@ type NewUser struct {
 }
 
 type Query struct {
+}
+
+type SightingInput struct {
+	TigerID            string                   `json:"tigerID"`
+	LastSeenTime       time.Time                `json:"lastSeenTime"`
+	LastSeenCoordinate *LastSeenCoordinateInput `json:"lastSeenCoordinate"`
+	Image              *graphql.Upload          `json:"image,omitempty"`
 }
 
 type TigerInput struct {

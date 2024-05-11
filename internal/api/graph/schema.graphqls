@@ -8,7 +8,7 @@ directive @auth on FIELD_DEFINITION
 
 scalar Any
 scalar Time
-scalar DateTime
+scalar Upload
 
 type User {
   id: ID!
@@ -30,7 +30,20 @@ type Tiger {
   lastSeenCoordinate:LastSeenCoordinate!
 }
 
+type Sighting {
+  id: ID!
+  tigerID: String!
+  lastSeenTime: Time!
+  lastSeenCoordinate: LastSeenCoordinate!
+  image: String
+}
+
 type LastSeenCoordinate {
+  latitude: Float!
+  longitude: Float!
+}
+
+input LastSeenCoordinateInput {
   latitude: Float!
   longitude: Float!
 }
@@ -42,9 +55,11 @@ input TigerInput {
   lastSeenCoordinate: LastSeenCoordinateInput!
 }
 
-input LastSeenCoordinateInput {
-  latitude: Float!
-  longitude: Float!
+input SightingInput {
+  tigerID: String!
+  lastSeenTime: Time!
+  lastSeenCoordinate: LastSeenCoordinateInput!
+  image: Upload
 }
 
 type AuthOps {
@@ -52,14 +67,34 @@ type AuthOps {
   register(input: NewUser!): Any! @goField(forceResolver: true)
 }
 
+type ListOps {
+  listTigers(
+    limit: Int! = 10,    # Default limit of 10 tigers per page
+    offset: Int! = 0     # Default offset of 0 (start at the beginning)
+  ): [Tiger!]! @goField(forceResolver: true)
+  listSightings(
+    tigerID: String!, 
+    limit: Int! = 10,    # Default limit of 10 sightings per page
+    offset: Int! = 0     # Default offset of 0 (start at the beginning)
+  ): [Sighting!]! @goField(forceResolver: true)
+}
+
+type CreateOps {
+  createSighting(
+    input: SightingInput!
+  ): Sighting! @goField(forceResolver: true) @auth
+  createTiger(
+    input: TigerInput!
+  ): Tiger! @goField(forceResolver: true) @auth
+}
+
 type Query {
   user(id: ID!): User! @goField(forceResolver: true)
-
-  # Add Protected Resource
-  protected: String! @goField(forceResolver: true) @auth
+  list: ListOps! @goField
 }
 
 type Mutation {
   auth: AuthOps! @goField(forceResolver: true)
-  createTiger(input: TigerInput!): Tiger! @goField(forceResolver: true) @auth
+  create: CreateOps! @goField(forceResolver: true) @auth
 }
+

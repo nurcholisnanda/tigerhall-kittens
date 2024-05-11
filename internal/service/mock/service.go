@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	graphql "github.com/99designs/gqlgen/graphql"
 	jwt "github.com/golang-jwt/jwt/v5"
 	model "github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	gomock "go.uber.org/mock/gomock"
@@ -125,7 +126,7 @@ func (mr *MockUserServiceMockRecorder) Login(ctx, email, password any) *gomock.C
 }
 
 // Register mocks base method.
-func (m *MockUserService) Register(ctx context.Context, input model.NewUser) (any, error) {
+func (m *MockUserService) Register(ctx context.Context, input *model.NewUser) (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Register", ctx, input)
 	ret0, _ := ret[0].(any)
@@ -163,7 +164,7 @@ func (m *MockTigerService) EXPECT() *MockTigerServiceMockRecorder {
 }
 
 // CreateTiger mocks base method.
-func (m *MockTigerService) CreateTiger(ctx context.Context, input model.TigerInput) (*model.Tiger, error) {
+func (m *MockTigerService) CreateTiger(ctx context.Context, input *model.TigerInput) (*model.Tiger, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateTiger", ctx, input)
 	ret0, _ := ret[0].(*model.Tiger)
@@ -175,4 +176,87 @@ func (m *MockTigerService) CreateTiger(ctx context.Context, input model.TigerInp
 func (mr *MockTigerServiceMockRecorder) CreateTiger(ctx, input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTiger", reflect.TypeOf((*MockTigerService)(nil).CreateTiger), ctx, input)
+}
+
+// ListTigers mocks base method.
+func (m *MockTigerService) ListTigers(ctx context.Context, limit, offset int) ([]*model.Tiger, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListTigers", ctx, limit, offset)
+	ret0, _ := ret[0].([]*model.Tiger)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListTigers indicates an expected call of ListTigers.
+func (mr *MockTigerServiceMockRecorder) ListTigers(ctx, limit, offset any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTigers", reflect.TypeOf((*MockTigerService)(nil).ListTigers), ctx, limit, offset)
+}
+
+// MockSightingService is a mock of SightingService interface.
+type MockSightingService struct {
+	ctrl     *gomock.Controller
+	recorder *MockSightingServiceMockRecorder
+}
+
+// MockSightingServiceMockRecorder is the mock recorder for MockSightingService.
+type MockSightingServiceMockRecorder struct {
+	mock *MockSightingService
+}
+
+// NewMockSightingService creates a new mock instance.
+func NewMockSightingService(ctrl *gomock.Controller) *MockSightingService {
+	mock := &MockSightingService{ctrl: ctrl}
+	mock.recorder = &MockSightingServiceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockSightingService) EXPECT() *MockSightingServiceMockRecorder {
+	return m.recorder
+}
+
+// CreateSighting mocks base method.
+func (m *MockSightingService) CreateSighting(ctx context.Context, newSighting *model.SightingInput) (*model.Sighting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSighting", ctx, newSighting)
+	ret0, _ := ret[0].(*model.Sighting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSighting indicates an expected call of CreateSighting.
+func (mr *MockSightingServiceMockRecorder) CreateSighting(ctx, newSighting any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSighting", reflect.TypeOf((*MockSightingService)(nil).CreateSighting), ctx, newSighting)
+}
+
+// GetResizedImage mocks base method.
+func (m *MockSightingService) GetResizedImage(ctx context.Context, inputImage *graphql.Upload) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetResizedImage", ctx, inputImage)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetResizedImage indicates an expected call of GetResizedImage.
+func (mr *MockSightingServiceMockRecorder) GetResizedImage(ctx, inputImage any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResizedImage", reflect.TypeOf((*MockSightingService)(nil).GetResizedImage), ctx, inputImage)
+}
+
+// ListSightings mocks base method.
+func (m *MockSightingService) ListSightings(ctx context.Context, tigerID string, limit, offset int) ([]*model.Sighting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSightings", ctx, tigerID, limit, offset)
+	ret0, _ := ret[0].([]*model.Sighting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListSightings indicates an expected call of ListSightings.
+func (mr *MockSightingServiceMockRecorder) ListSightings(ctx, tigerID, limit, offset any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSightings", reflect.TypeOf((*MockSightingService)(nil).ListSightings), ctx, tigerID, limit, offset)
 }

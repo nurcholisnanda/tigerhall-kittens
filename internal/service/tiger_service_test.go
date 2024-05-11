@@ -75,7 +75,7 @@ func Test_tigerService_CreateTiger(t *testing.T) {
 	}
 	type args struct {
 		ctx   context.Context
-		input model.TigerInput
+		input *model.TigerInput
 	}
 	tests := []struct {
 		name    string
@@ -92,7 +92,7 @@ func Test_tigerService_CreateTiger(t *testing.T) {
 			},
 			args: args{
 				ctx:   context.Background(),
-				input: invalidInput,
+				input: &invalidInput,
 			},
 			want:    nil,
 			wantErr: true,
@@ -104,7 +104,7 @@ func Test_tigerService_CreateTiger(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				input: model.TigerInput{
+				input: &model.TigerInput{
 					Name:               "tiger a",
 					DateOfBirth:        time.Now().Add(time.Hour * 1),
 					LastSeenTime:       time.Now().Add((time.Hour * -1)),
@@ -121,7 +121,7 @@ func Test_tigerService_CreateTiger(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				input: model.TigerInput{
+				input: &model.TigerInput{
 					Name:               "tiger a",
 					DateOfBirth:        time.Now().Add(time.Hour * -11),
 					LastSeenTime:       time.Now().Add((time.Hour * 1)),
@@ -138,20 +138,20 @@ func Test_tigerService_CreateTiger(t *testing.T) {
 			},
 			args: args{
 				ctx:   context.Background(),
-				input: validInput,
+				input: &validInput,
 			},
 			want:    nil,
 			wantErr: true,
 			mocks:   tigerRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(errors.New("any error")),
 		},
 		{
-			name: "should return error ifif input the same name",
+			name: "should return error if input the same name",
 			fields: fields{
 				tigerRepo: tigerRepo,
 			},
 			args: args{
 				ctx:   context.Background(),
-				input: validInput,
+				input: &validInput,
 			},
 			want:    nil,
 			wantErr: true,
@@ -164,7 +164,7 @@ func Test_tigerService_CreateTiger(t *testing.T) {
 			},
 			args: args{
 				ctx:   context.Background(),
-				input: validInput,
+				input: &validInput,
 			},
 			want:    tiger,
 			wantErr: false,
@@ -185,6 +185,77 @@ func Test_tigerService_CreateTiger(t *testing.T) {
 				if !reflect.DeepEqual(got.Name, tt.want.Name) {
 					t.Errorf("tigerService.CreateTiger() = %v, want %v", got, tt.want)
 				}
+			}
+		})
+	}
+}
+
+func Test_tigerService_ListTigers(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	tigerRepo := mockRepo.NewMockTigerRepository(ctrl)
+	tigers := []*model.Tiger{
+		{
+			ID:   uuid.NewString(),
+			Name: "tiger a",
+		},
+	}
+	type fields struct {
+		tigerRepo repository.TigerRepository
+	}
+	type args struct {
+		ctx    context.Context
+		limit  int
+		offset int
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []*model.Tiger
+		wantErr bool
+		mocks   *gomock.Call
+	}{
+		{
+			name: "should return error if failed to get data from db",
+			fields: fields{
+				tigerRepo: tigerRepo,
+			},
+			args: args{
+				ctx:    context.Background(),
+				limit:  1,
+				offset: 0,
+			},
+			want:    nil,
+			wantErr: true,
+			mocks:   tigerRepo.EXPECT().ListTigers(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("any error")),
+		},
+		{
+			name: "success",
+			fields: fields{
+				tigerRepo: tigerRepo,
+			},
+			args: args{
+				ctx:    context.Background(),
+				limit:  1,
+				offset: 0,
+			},
+			want:    tigers,
+			wantErr: false,
+			mocks:   tigerRepo.EXPECT().ListTigers(gomock.Any(), gomock.Any(), gomock.Any()).Return(tigers, nil),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &tigerService{
+				tigerRepo: tt.fields.tigerRepo,
+			}
+			got, err := s.ListTigers(tt.args.ctx, tt.args.limit, tt.args.offset)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("tigerService.ListTigers() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("tigerService.ListTigers() = %v, want %v", got, tt.want)
 			}
 		})
 	}

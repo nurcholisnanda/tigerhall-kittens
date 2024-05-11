@@ -54,34 +54,34 @@ func (mr *MockUserRepositoryMockRecorder) CreateUser(ctx, user any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepository)(nil).CreateUser), ctx, user)
 }
 
-// FindUserByEmail mocks base method.
-func (m *MockUserRepository) FindUserByEmail(ctx context.Context, email string) (*model.User, error) {
+// GetUserByEmail mocks base method.
+func (m *MockUserRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindUserByEmail", ctx, email)
+	ret := m.ctrl.Call(m, "GetUserByEmail", ctx, email)
 	ret0, _ := ret[0].(*model.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindUserByEmail indicates an expected call of FindUserByEmail.
-func (mr *MockUserRepositoryMockRecorder) FindUserByEmail(ctx, email any) *gomock.Call {
+// GetUserByEmail indicates an expected call of GetUserByEmail.
+func (mr *MockUserRepositoryMockRecorder) GetUserByEmail(ctx, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindUserByEmail", reflect.TypeOf((*MockUserRepository)(nil).FindUserByEmail), ctx, email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockUserRepository)(nil).GetUserByEmail), ctx, email)
 }
 
-// FindUserByID mocks base method.
-func (m *MockUserRepository) FindUserByID(ctx context.Context, id string) (*model.User, error) {
+// GetUserByID mocks base method.
+func (m *MockUserRepository) GetUserByID(ctx context.Context, id string) (*model.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindUserByID", ctx, id)
+	ret := m.ctrl.Call(m, "GetUserByID", ctx, id)
 	ret0, _ := ret[0].(*model.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindUserByID indicates an expected call of FindUserByID.
-func (mr *MockUserRepositoryMockRecorder) FindUserByID(ctx, id any) *gomock.Call {
+// GetUserByID indicates an expected call of GetUserByID.
+func (mr *MockUserRepositoryMockRecorder) GetUserByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindUserByID", reflect.TypeOf((*MockUserRepository)(nil).FindUserByID), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockUserRepository)(nil).GetUserByID), ctx, id)
 }
 
 // MockTigerRepository is a mock of TigerRepository interface.
@@ -119,4 +119,116 @@ func (m *MockTigerRepository) Create(ctx context.Context, tiger *model.Tiger) er
 func (mr *MockTigerRepositoryMockRecorder) Create(ctx, tiger any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTigerRepository)(nil).Create), ctx, tiger)
+}
+
+// GetTigerByID mocks base method.
+func (m *MockTigerRepository) GetTigerByID(ctx context.Context, id string) (*model.Tiger, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTigerByID", ctx, id)
+	ret0, _ := ret[0].(*model.Tiger)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTigerByID indicates an expected call of GetTigerByID.
+func (mr *MockTigerRepositoryMockRecorder) GetTigerByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTigerByID", reflect.TypeOf((*MockTigerRepository)(nil).GetTigerByID), ctx, id)
+}
+
+// ListTigers mocks base method.
+func (m *MockTigerRepository) ListTigers(ctx context.Context, limit, offset int) ([]*model.Tiger, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListTigers", ctx, limit, offset)
+	ret0, _ := ret[0].([]*model.Tiger)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListTigers indicates an expected call of ListTigers.
+func (mr *MockTigerRepositoryMockRecorder) ListTigers(ctx, limit, offset any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTigers", reflect.TypeOf((*MockTigerRepository)(nil).ListTigers), ctx, limit, offset)
+}
+
+// MockSightingRepository is a mock of SightingRepository interface.
+type MockSightingRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockSightingRepositoryMockRecorder
+}
+
+// MockSightingRepositoryMockRecorder is the mock recorder for MockSightingRepository.
+type MockSightingRepositoryMockRecorder struct {
+	mock *MockSightingRepository
+}
+
+// NewMockSightingRepository creates a new mock instance.
+func NewMockSightingRepository(ctrl *gomock.Controller) *MockSightingRepository {
+	mock := &MockSightingRepository{ctrl: ctrl}
+	mock.recorder = &MockSightingRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockSightingRepository) EXPECT() *MockSightingRepositoryMockRecorder {
+	return m.recorder
+}
+
+// CreateSighting mocks base method.
+func (m *MockSightingRepository) CreateSighting(ctx context.Context, sighting *model.Sighting) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSighting", ctx, sighting)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateSighting indicates an expected call of CreateSighting.
+func (mr *MockSightingRepositoryMockRecorder) CreateSighting(ctx, sighting any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSighting", reflect.TypeOf((*MockSightingRepository)(nil).CreateSighting), ctx, sighting)
+}
+
+// GetLatestSightingByTigerID mocks base method.
+func (m *MockSightingRepository) GetLatestSightingByTigerID(ctx context.Context, tigerID string) (*model.Sighting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLatestSightingByTigerID", ctx, tigerID)
+	ret0, _ := ret[0].(*model.Sighting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLatestSightingByTigerID indicates an expected call of GetLatestSightingByTigerID.
+func (mr *MockSightingRepositoryMockRecorder) GetLatestSightingByTigerID(ctx, tigerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestSightingByTigerID", reflect.TypeOf((*MockSightingRepository)(nil).GetLatestSightingByTigerID), ctx, tigerID)
+}
+
+// GetSightingsByTigerID mocks base method.
+func (m *MockSightingRepository) GetSightingsByTigerID(ctx context.Context, tigerID string, limit, offset int) ([]*model.Sighting, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSightingsByTigerID", ctx, tigerID, limit, offset)
+	ret0, _ := ret[0].([]*model.Sighting)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSightingsByTigerID indicates an expected call of GetSightingsByTigerID.
+func (mr *MockSightingRepositoryMockRecorder) GetSightingsByTigerID(ctx, tigerID, limit, offset any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSightingsByTigerID", reflect.TypeOf((*MockSightingRepository)(nil).GetSightingsByTigerID), ctx, tigerID, limit, offset)
+}
+
+// ListUserCreatedSightingByTigerID mocks base method.
+func (m *MockSightingRepository) ListUserCreatedSightingByTigerID(ctx context.Context, tigerID string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListUserCreatedSightingByTigerID", ctx, tigerID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListUserCreatedSightingByTigerID indicates an expected call of ListUserCreatedSightingByTigerID.
+func (mr *MockSightingRepositoryMockRecorder) ListUserCreatedSightingByTigerID(ctx, tigerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUserCreatedSightingByTigerID", reflect.TypeOf((*MockSightingRepository)(nil).ListUserCreatedSightingByTigerID), ctx, tigerID)
 }

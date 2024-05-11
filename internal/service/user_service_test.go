@@ -59,7 +59,7 @@ func Test_userService_Register(t *testing.T) {
 	jwt := mockSvc.NewMockJWT(ctrl)
 
 	ctx := context.Background()
-	input := model.NewUser{
+	input := &model.NewUser{
 		Name:     "name",
 		Email:    "email",
 		Password: "password",
@@ -67,11 +67,10 @@ func Test_userService_Register(t *testing.T) {
 	type fields struct {
 		userRepo repository.UserRepository
 		bcrypt   bcrypt.BcryptInterface
-		jwt      JWT
 	}
 	type args struct {
 		ctx   context.Context
-		input model.NewUser
+		input *model.NewUser
 	}
 	hashedPassword := []byte("hashed_password")
 	tests := []struct {
@@ -109,7 +108,7 @@ func Test_userService_Register(t *testing.T) {
 			wantErr: true,
 			mocks: []*gomock.Call{
 				mockBcrypt.EXPECT().HashPassword(gomock.Any()).Return(hashedPassword, nil),
-				userRepo.EXPECT().FindUserByEmail(ctx, gomock.Any()).Return(&model.User{ID: "1"}, nil),
+				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(&model.User{ID: "1"}, nil),
 			},
 		},
 		{
@@ -125,7 +124,7 @@ func Test_userService_Register(t *testing.T) {
 			wantErr: true,
 			mocks: []*gomock.Call{
 				mockBcrypt.EXPECT().HashPassword(gomock.Any()).Return(hashedPassword, nil),
-				userRepo.EXPECT().FindUserByEmail(ctx, gomock.Any()).Return(nil, errors.New("any error")),
+				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(nil, errors.New("any error")),
 			},
 		},
 		{
@@ -141,7 +140,7 @@ func Test_userService_Register(t *testing.T) {
 			wantErr: true,
 			mocks: []*gomock.Call{
 				mockBcrypt.EXPECT().HashPassword(gomock.Any()).Return(hashedPassword, nil),
-				userRepo.EXPECT().FindUserByEmail(ctx, gomock.Any()).Return(nil, gorm.ErrRecordNotFound),
+				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(nil, gorm.ErrRecordNotFound),
 				userRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(errors.New("any error")),
 			},
 		},
@@ -158,7 +157,7 @@ func Test_userService_Register(t *testing.T) {
 			wantErr: false,
 			mocks: []*gomock.Call{
 				mockBcrypt.EXPECT().HashPassword(gomock.Any()).Return(hashedPassword, nil),
-				userRepo.EXPECT().FindUserByEmail(ctx, gomock.Any()).Return(nil, gorm.ErrRecordNotFound),
+				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(nil, gorm.ErrRecordNotFound),
 				userRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(nil),
 			},
 		},
@@ -196,7 +195,6 @@ func Test_userService_Login(t *testing.T) {
 	type fields struct {
 		userRepo repository.UserRepository
 		bcrypt   bcrypt.BcryptInterface
-		jwt      JWT
 	}
 	type args struct {
 		ctx      context.Context
@@ -225,7 +223,7 @@ func Test_userService_Login(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 			mocks: []*gomock.Call{
-				userRepo.EXPECT().FindUserByEmail(ctx, gomock.Any()).Return(nil, errors.New("any error")),
+				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(nil, errors.New("any error")),
 			},
 		},
 		{
@@ -242,7 +240,7 @@ func Test_userService_Login(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 			mocks: []*gomock.Call{
-				userRepo.EXPECT().FindUserByEmail(ctx, gomock.Any()).Return(user, nil),
+				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(user, nil),
 				mockBcrypt.EXPECT().ComparePassword(gomock.Any(), gomock.Any()).Return(errors.New("any error")),
 			},
 		},
@@ -260,7 +258,7 @@ func Test_userService_Login(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 			mocks: []*gomock.Call{
-				userRepo.EXPECT().FindUserByEmail(ctx, gomock.Any()).Return(user, nil),
+				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(user, nil),
 				mockBcrypt.EXPECT().ComparePassword(gomock.Any(), gomock.Any()).Return(nil),
 				jwt.EXPECT().GenerateToken(ctx, gomock.Any()).Return("", errors.New("any error")),
 			},
@@ -279,7 +277,7 @@ func Test_userService_Login(t *testing.T) {
 			want:    map[string]string{"token": "token"},
 			wantErr: false,
 			mocks: []*gomock.Call{
-				userRepo.EXPECT().FindUserByEmail(ctx, gomock.Any()).Return(user, nil),
+				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(user, nil),
 				mockBcrypt.EXPECT().ComparePassword(gomock.Any(), gomock.Any()).Return(nil),
 				jwt.EXPECT().GenerateToken(ctx, gomock.Any()).Return("token", nil),
 			},
@@ -339,7 +337,7 @@ func Test_userService_GetUserByID(t *testing.T) {
 			},
 			want:    user,
 			wantErr: false,
-			mock:    userRepo.EXPECT().FindUserByID(context.Background(), gomock.Any()).Return(user, nil),
+			mock:    userRepo.EXPECT().GetUserByID(context.Background(), gomock.Any()).Return(user, nil),
 		},
 	}
 	for _, tt := range tests {

@@ -19,6 +19,14 @@ func NewTigerRepositoryImpl(db *gorm.DB) TigerRepository {
 	}
 }
 
+func (r *TigerRepositoryImpl) GetTigerByID(ctx context.Context, id string) (*model.Tiger, error) {
+	var tiger *model.Tiger
+	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&tiger).Error; err != nil {
+		return nil, err
+	}
+	return tiger, nil
+}
+
 func (r *TigerRepositoryImpl) Create(ctx context.Context, tiger *model.Tiger) error {
 	userId, err := helper.GetUserID(ctx)
 	if err != nil {
@@ -28,7 +36,10 @@ func (r *TigerRepositoryImpl) Create(ctx context.Context, tiger *model.Tiger) er
 	return r.db.WithContext(ctx).Create(tiger).Error
 }
 
-// func (r *TigerRepositoryImpl) FindAll() ([]model.Tiger, error) {
-// 	// Add implementation to retrieve all tigers from the database
-// 	return nil, nil
-// }
+func (r *TigerRepositoryImpl) ListTigers(ctx context.Context, limit int, offset int) ([]*model.Tiger, error) {
+	var tigers []*model.Tiger
+	if err := r.db.WithContext(ctx).Offset(offset).Limit(limit).Order("last_seen_time desc").Find(&tigers).Error; err != nil {
+		return nil, err
+	}
+	return tigers, nil
+}

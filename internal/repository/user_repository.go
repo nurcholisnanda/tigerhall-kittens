@@ -21,7 +21,7 @@ func (r *userRepoImpl) CreateUser(ctx context.Context, user *model.User) error {
 	return r.db.WithContext(ctx).Create(user).Error
 }
 
-func (r *userRepoImpl) FindUserByID(ctx context.Context, id string) (*model.User, error) {
+func (r *userRepoImpl) GetUserByID(ctx context.Context, id string) (*model.User, error) {
 	var user *model.User
 	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (r *userRepoImpl) FindUserByID(ctx context.Context, id string) (*model.User
 	return user, nil
 }
 
-func (r *userRepoImpl) FindUserByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r *userRepoImpl) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	var user *model.User
 	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
