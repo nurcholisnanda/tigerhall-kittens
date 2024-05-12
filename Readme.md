@@ -43,14 +43,13 @@ This project is a backend API designed to support a fictional mobile app that al
 *   **ORM:** GORM
 *   **Authentication:** JWT (JSON Web Tokens)
 *   **Image Resizing:** github.com/disintegration/imaging
-*   **Logging:** logrus (or your preferred logging library)
-*   **Other:** (List any other libraries or tools you've used)
+*   **Logging:** logrus
 
 ## Getting Started
 
 ### Prerequisites
 
-*   Go (v1.xx or later) 
+*   Go (v1.21.4 or later) 
 *   PostgreSQL
 *   (Optional) Mailtrap or a similar service for testing email notifications
 
@@ -58,7 +57,7 @@ This project is a backend API designed to support a fictional mobile app that al
 
 1.  Clone the repository:
 ```bash
-git clone https://your-repository-url.git
+git clone https://github.com/nurcholisnanda/tigerhall-kittens.git
 cd tigerhall-kittens
 ```
 2. Update dependency
