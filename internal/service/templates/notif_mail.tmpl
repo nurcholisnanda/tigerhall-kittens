@@ -5,7 +5,7 @@ Dear {{.Sighter}},
 
 We have received a new sighting report for tiger {{.TigerID}}.
 
-The new sighting was reported on {{.Timestamp.Format "2006-01-02 15:04:05"}} at coordinates ({{.Latitude}}, {{.Longitude}}).
+The new sighting was reported on {{.Timestamp.Format "2006-01-02 15:04:05 UTC"}} at coordinates (Lat = {{.Latitude}}, Lon = {{.Longitude}}).
 
 You can view the new sighting details and image in the Tigerhall Kittens app.
 
@@ -29,7 +29,7 @@ The Tigerhall Kittens Team
 
 <p>We have received a new sighting report for tiger <b>{{.TigerID}}.</b>
 
-<p>The new sighting was reported on <b>{{.Timestamp.Format "2006-01-02 15:04:05"}}</b> at coordinates <b>({{.Latitude}}, {{.Longitude}})</b>.</p>
+<p>The new sighting was reported on <b>{{.Timestamp.Format "2006-01-02 15:04:05"}} UTC</b> at coordinates <b>(Lat = {{.Latitude}}, Lon = {{.Longitude}})</b>.</p>
 
 <p>You can view the new sighting details and image in the Tigerhall Kittens app</p>  
 
