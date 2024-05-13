@@ -13,21 +13,25 @@ services:
       - postgres
     networks:
       - project_network
+    env_file:
+      - .env
 
   # Database container
   postgres:
     image: postgres:latest
     container_name: postgres
     ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_USER=postgres      
-      - POSTGRES_PASSWORD=password  
-      - POSTGRES_DB=tigerhall_kittens        
+      - 5432:5432 
     volumes:
       - database_postgres:/var/lib/postgresql/data
     networks:
       - project_network
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD} 
+      - POSTGRES_DB=tigerhall_kittens
 
 volumes:
   database_postgres:

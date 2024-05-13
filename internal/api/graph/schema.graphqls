@@ -27,23 +27,23 @@ type Tiger {
   name: String!
   dateOfBirth: Time!
   lastSeenTime: Time!
-  lastSeenCoordinate:LastSeenCoordinate!
+  lastSeenCoordinate:Coordinate!
 }
 
 type Sighting {
   id: ID!
   tigerID: String!
   lastSeenTime: Time!
-  lastSeenCoordinate: LastSeenCoordinate!
+  lastSeenCoordinate: Coordinate!
   image: String
 }
 
-type LastSeenCoordinate {
+type Coordinate {
   latitude: Float!
   longitude: Float!
 }
 
-input LastSeenCoordinateInput {
+input CoordinateInput {
   latitude: Float!
   longitude: Float!
 }
@@ -52,13 +52,12 @@ input TigerInput {
   name: String!
   dateOfBirth: Time!
   lastSeenTime: Time!
-  lastSeenCoordinate: LastSeenCoordinateInput!
+  lastSeenCoordinate: CoordinateInput!
 }
 
 input SightingInput {
   tigerID: String!
-  lastSeenTime: Time!
-  lastSeenCoordinate: LastSeenCoordinateInput!
+  Coordinate: CoordinateInput!
   image: Upload
 }
 

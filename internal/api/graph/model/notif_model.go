@@ -3,7 +3,8 @@ package model // Adjust the package name based on your project structure
 import "time"
 
 type Notification struct {
-	TigerID    string    `json:"tigerID"`
-	SightingID string    `json:"sightingID"`
-	Timestamp  time.Time `json:"timestamp"`
+	TigerID   string    `json:"tigerID"`
+	Timestamp time.Time `json:"timestamp"`
+	Latitude  float64   `json:"latitude"`
+	Longitude float64   `json:"longitude"`
 }

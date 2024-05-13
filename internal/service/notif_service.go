@@ -3,17 +3,12 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"net/smtp"
-	"os"
-	"time"
 
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
-	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 // Channel for sending notifications
@@ -23,13 +18,19 @@ var NotificationChan = make(chan model.Notification)
 type notificationService struct {
 	sightingRepo repository.SightingRepository
 	userRepo     repository.UserRepository
+	mailSvc      MailerInterface
 }
 
 // NewNotificationService creates a new NotificationService
-func NewNotificationService(sr repository.SightingRepository, ur repository.UserRepository) *notificationService {
+func NewNotificationService(
+	sr repository.SightingRepository,
+	ur repository.UserRepository,
+	mailSvc MailerInterface,
+) *notificationService {
 	return &notificationService{
 		sightingRepo: sr,
 		userRepo:     ur,
+		mailSvc:      mailSvc,
 	}
 }
 
@@ -46,8 +47,9 @@ func (s *notificationService) StartNotificationConsumer() {
 			}
 
 			// Send email notifications
+			done := make(chan struct{})
 			for _, sighter := range previousSighters {
-				s.sendEmail(ctx, *sighter, notification)
+				s.mailSvc.Send(ctx, sighter.Email, "notif_mail.tmpl", notification, done)
 			}
 		}
 	}()
@@ -78,30 +80,4 @@ func (s *notificationService) FetchPreviousSighters(ctx context.Context, tigerID
 	}
 
 	return previousSighters, nil
-}
-
-// sendEmail (Placeholder - you need to implement this)
-func (s *notificationService) sendEmail(ctx context.Context, user model.User, notification model.Notification) error {
-	// Set up Mailtrap SMTP configuration
-	from := mail.NewEmail("TigerHall Kittens", "allendragneel@gmail.com")
-	to := mail.NewEmail(user.Name, user.Email)
-	plainTextContent := fmt.Sprintf(
-		"Hello %s,\n\nA new sighting of tiger %s has been reported on %s.\n\nBest regards,\nTigerHall Kittens",
-		user.Name, notification.TigerID, notification.Timestamp.Format(time.RFC822),
-	)
-
-	// Set up authentication (replace with your Mailtrap credentials)
-	auth := smtp.PlainAuth("", os.Getenv("MAILTRAP_USERNAME"), os.Getenv("MAILTRAP_PASSWORD"), "sandbox.smtp.mailtrap.io")
-
-	// Send the email
-	err := smtp.SendMail("sandbox.smtp.mailtrap.io:2525", auth, from.Address, []string{to.Address}, []byte(plainTextContent))
-	if err != nil {
-		return fmt.Errorf("error sending email: %w", err)
-	}
-
-	// Log successful email delivered
-	logger.Logger(ctx).Info(ctx, "Sent email notification to user:", user.ID)
-
-	return nil
-
 }

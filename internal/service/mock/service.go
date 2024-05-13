@@ -260,3 +260,40 @@ func (mr *MockSightingServiceMockRecorder) ListSightings(ctx, tigerID, limit, of
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSightings", reflect.TypeOf((*MockSightingService)(nil).ListSightings), ctx, tigerID, limit, offset)
 }
+
+// MockMailerInterface is a mock of MailerInterface interface.
+type MockMailerInterface struct {
+	ctrl     *gomock.Controller
+	recorder *MockMailerInterfaceMockRecorder
+}
+
+// MockMailerInterfaceMockRecorder is the mock recorder for MockMailerInterface.
+type MockMailerInterfaceMockRecorder struct {
+	mock *MockMailerInterface
+}
+
+// NewMockMailerInterface creates a new mock instance.
+func NewMockMailerInterface(ctrl *gomock.Controller) *MockMailerInterface {
+	mock := &MockMailerInterface{ctrl: ctrl}
+	mock.recorder = &MockMailerInterfaceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMailerInterface) EXPECT() *MockMailerInterfaceMockRecorder {
+	return m.recorder
+}
+
+// Send mocks base method.
+func (m *MockMailerInterface) Send(recipient, templateFile string, data any, done chan struct{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Send", recipient, templateFile, data, done)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Send indicates an expected call of Send.
+func (mr *MockMailerInterfaceMockRecorder) Send(recipient, templateFile, data, done any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockMailerInterface)(nil).Send), recipient, templateFile, data, done)
+}

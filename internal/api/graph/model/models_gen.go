@@ -13,14 +13,19 @@ type AuthOps struct {
 	Register interface{} `json:"register"`
 }
 
+type Coordinate struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+}
+
+type CoordinateInput struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+}
+
 type CreateOps struct {
 	CreateSighting *Sighting `json:"createSighting"`
 	CreateTiger    *Tiger    `json:"createTiger"`
-}
-
-type LastSeenCoordinateInput struct {
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
 }
 
 type ListOps struct {
@@ -41,15 +46,14 @@ type Query struct {
 }
 
 type SightingInput struct {
-	TigerID            string                   `json:"tigerID"`
-	LastSeenTime       time.Time                `json:"lastSeenTime"`
-	LastSeenCoordinate *LastSeenCoordinateInput `json:"lastSeenCoordinate"`
-	Image              *graphql.Upload          `json:"image,omitempty"`
+	TigerID    string           `json:"tigerID"`
+	Coordinate *CoordinateInput `json:"Coordinate"`
+	Image      *graphql.Upload  `json:"image,omitempty"`
 }
 
 type TigerInput struct {
-	Name               string                   `json:"name"`
-	DateOfBirth        time.Time                `json:"dateOfBirth"`
-	LastSeenTime       time.Time                `json:"lastSeenTime"`
-	LastSeenCoordinate *LastSeenCoordinateInput `json:"lastSeenCoordinate"`
+	Name               string           `json:"name"`
+	DateOfBirth        time.Time        `json:"dateOfBirth"`
+	LastSeenTime       time.Time        `json:"lastSeenTime"`
+	LastSeenCoordinate *CoordinateInput `json:"lastSeenCoordinate"`
 }

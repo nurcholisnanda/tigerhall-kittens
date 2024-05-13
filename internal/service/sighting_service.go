@@ -3,7 +3,6 @@ package service
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"image"
@@ -12,11 +11,15 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/google/uuid"
 	"github.com/nfnt/resize"
+	"github.com/nurcholisnanda/tigerhall-kittens/config"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
@@ -27,12 +30,18 @@ import (
 type sightingService struct {
 	sightingRepo repository.SightingRepository
 	tigerRepo    repository.TigerRepository
+	s3Client     *config.S3Client
 }
 
-func NewSightingService(sightingRepo repository.SightingRepository, tigerRepo repository.TigerRepository) SightingService {
+func NewSightingService(
+	sightingRepo repository.SightingRepository,
+	tigerRepo repository.TigerRepository,
+	s3Client *config.S3Client,
+) SightingService {
 	return &sightingService{
 		sightingRepo: sightingRepo,
 		tigerRepo:    tigerRepo,
+		s3Client:     s3Client,
 	}
 }
 
@@ -61,7 +70,7 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 		return nil, helper.NewCustomError("Failed to retrieve tiger by ID", http.StatusInternalServerError)
 	}
 
-	if !isValidLatitude(input.LastSeenCoordinate.Latitude) || !isValidLongitude(input.LastSeenCoordinate.Longitude) {
+	if !isValidLatitude(input.Coordinate.Latitude) || !isValidLongitude(input.Coordinate.Longitude) {
 		return nil, &helper.InvalidCoordinatesError{
 			Message: "latitude must be between -90 and 90, longitude between -180 and 180",
 		}
@@ -75,29 +84,14 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 		}
 	}
 
-	if input.LastSeenTime.After(time.Now()) {
-		return nil, &helper.InvalidLastSeenTimeError{
-			Message: "last seen time cannot be in the future",
-		}
-	}
-
-	var lastSeenTime time.Time
-	var lastSeenCoordinate *model.LastSeenCoordinate
+	var Coordinate *model.Coordinate
 	if sighting == nil {
-		lastSeenTime = tiger.LastSeenTime
-		lastSeenCoordinate = tiger.LastSeenCoordinate
+		Coordinate = tiger.Coordinate
 	} else {
-		lastSeenTime = sighting.LastSeenTime
-		lastSeenCoordinate = sighting.LastSeenCoordinate
+		Coordinate = sighting.Coordinate
 	}
 
-	if input.LastSeenTime.Before(lastSeenTime) || input.LastSeenTime.Equal(lastSeenTime) {
-		return nil, &helper.InvalidLastSeenTimeError{
-			Message: "your time sighting could not before last time seen recorded",
-		}
-	}
-
-	distance := calculateDistance((*model.LastSeenCoordinate)(input.LastSeenCoordinate), lastSeenCoordinate)
+	distance := calculateDistance((*model.Coordinate)(input.Coordinate), Coordinate)
 	if distance < 5000 {
 		return nil, &helper.SightingTooCloseError{
 			Message: fmt.Sprintf("new sighting is too close to the last known location (%.2f meters)", distance),
@@ -110,11 +104,11 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 	}
 
 	newSighting := &model.Sighting{
-		ID:                 uuid.NewString(),
-		TigerID:            input.TigerID,
-		LastSeenTime:       input.LastSeenTime,
-		Image:              &imagePath,
-		LastSeenCoordinate: (*model.LastSeenCoordinate)(input.LastSeenCoordinate),
+		ID:           uuid.NewString(),
+		TigerID:      input.TigerID,
+		LastSeenTime: time.Now(),
+		Image:        &imagePath,
+		Coordinate:   (*model.Coordinate)(input.Coordinate),
 	}
 
 	if err := s.sightingRepo.CreateSighting(ctx, newSighting); err != nil {
@@ -124,9 +118,10 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 
 	// Create a notification message\
 	notification := model.Notification{
-		TigerID:    newSighting.TigerID,
-		SightingID: newSighting.ID,
-		Timestamp:  time.Now(),
+		TigerID:   newSighting.TigerID,
+		Latitude:  input.Coordinate.Latitude,
+		Longitude: input.Coordinate.Longitude,
+		Timestamp: time.Now(),
 	}
 
 	// Send the notification
@@ -159,11 +154,26 @@ func (s *sightingService) GetResizedImage(ctx context.Context, inputImage *graph
 		return "", fmt.Errorf("error encoding image: %v", err)
 	}
 
-	// Return the base64 encoded string
-	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
+	// Upload to R2
+	bucketName := os.Getenv("R2_BUCKET_NAME") // Get bucket name from env vars
+
+	objectName := fmt.Sprintf("%s.%s", uuid.NewString(), format)
+	_, err = s.s3Client.Client.PutObject(&s3.PutObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objectName),
+		Body:   bytes.NewReader(buf.Bytes()),
+	})
+	if err != nil {
+		logger.Logger(ctx).Error("Error uploading image to R2", "error", err)
+		return "", fmt.Errorf("error uploading image to R2: %w", err)
+	}
+
+	objectURL := fmt.Sprintf("https://%s.r2.cloudflarestorage.com/%s/%s", os.Getenv("R2_ACCOUNT_ID"), bucketName, objectName)
+	logger.Logger(ctx).Info("Image uploaded to R2", "objectURL", objectURL)
+	return objectURL, nil
 }
 
-func calculateDistance(coord1, coord2 *model.LastSeenCoordinate) float64 {
+func calculateDistance(coord1, coord2 *model.Coordinate) float64 {
 	// Earth radius in meters
 	const EarthRadius = 6371000
 	// Convert latitude and longitude from degrees to radians

@@ -57,14 +57,14 @@ type ComplexityRoot struct {
 		Register func(childComplexity int, input model.NewUser) int
 	}
 
+	Coordinate struct {
+		Latitude  func(childComplexity int) int
+		Longitude func(childComplexity int) int
+	}
+
 	CreateOps struct {
 		CreateSighting func(childComplexity int, input model.SightingInput) int
 		CreateTiger    func(childComplexity int, input model.TigerInput) int
-	}
-
-	LastSeenCoordinate struct {
-		Latitude  func(childComplexity int) int
-		Longitude func(childComplexity int) int
 	}
 
 	ListOps struct {
@@ -169,6 +169,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AuthOps.Register(childComplexity, args["input"].(model.NewUser)), true
 
+	case "Coordinate.latitude":
+		if e.complexity.Coordinate.Latitude == nil {
+			break
+		}
+
+		return e.complexity.Coordinate.Latitude(childComplexity), true
+
+	case "Coordinate.longitude":
+		if e.complexity.Coordinate.Longitude == nil {
+			break
+		}
+
+		return e.complexity.Coordinate.Longitude(childComplexity), true
+
 	case "CreateOps.createSighting":
 		if e.complexity.CreateOps.CreateSighting == nil {
 			break
@@ -192,20 +206,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CreateOps.CreateTiger(childComplexity, args["input"].(model.TigerInput)), true
-
-	case "LastSeenCoordinate.latitude":
-		if e.complexity.LastSeenCoordinate.Latitude == nil {
-			break
-		}
-
-		return e.complexity.LastSeenCoordinate.Latitude(childComplexity), true
-
-	case "LastSeenCoordinate.longitude":
-		if e.complexity.LastSeenCoordinate.Longitude == nil {
-			break
-		}
-
-		return e.complexity.LastSeenCoordinate.Longitude(childComplexity), true
 
 	case "ListOps.listSightings":
 		if e.complexity.ListOps.ListSightings == nil {
@@ -363,7 +363,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputLastSeenCoordinateInput,
+		ec.unmarshalInputCoordinateInput,
 		ec.unmarshalInputNewUser,
 		ec.unmarshalInputSightingInput,
 		ec.unmarshalInputTigerInput,
@@ -787,6 +787,94 @@ func (ec *executionContext) fieldContext_AuthOps_register(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Coordinate_latitude(ctx context.Context, field graphql.CollectedField, obj *model.Coordinate) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Coordinate_latitude(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Latitude, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Coordinate_latitude(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Coordinate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Coordinate_longitude(ctx context.Context, field graphql.CollectedField, obj *model.Coordinate) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Coordinate_longitude(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Longitude, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Coordinate_longitude(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Coordinate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CreateOps_createSighting(ctx context.Context, field graphql.CollectedField, obj *model.CreateOps) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CreateOps_createSighting(ctx, field)
 	if err != nil {
@@ -957,94 +1045,6 @@ func (ec *executionContext) fieldContext_CreateOps_createTiger(ctx context.Conte
 	if fc.Args, err = ec.field_CreateOps_createTiger_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _LastSeenCoordinate_latitude(ctx context.Context, field graphql.CollectedField, obj *model.LastSeenCoordinate) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_LastSeenCoordinate_latitude(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Latitude, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_LastSeenCoordinate_latitude(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "LastSeenCoordinate",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _LastSeenCoordinate_longitude(ctx context.Context, field graphql.CollectedField, obj *model.LastSeenCoordinate) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_LastSeenCoordinate_longitude(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Longitude, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_LastSeenCoordinate_longitude(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "LastSeenCoordinate",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
 	}
 	return fc, nil
 }
@@ -1691,7 +1691,7 @@ func (ec *executionContext) _Sighting_lastSeenCoordinate(ctx context.Context, fi
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.LastSeenCoordinate, nil
+		return obj.Coordinate, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1703,9 +1703,9 @@ func (ec *executionContext) _Sighting_lastSeenCoordinate(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.LastSeenCoordinate)
+	res := resTmp.(*model.Coordinate)
 	fc.Result = res
-	return ec.marshalNLastSeenCoordinate2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐLastSeenCoordinate(ctx, field.Selections, res)
+	return ec.marshalNCoordinate2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐCoordinate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Sighting_lastSeenCoordinate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1717,11 +1717,11 @@ func (ec *executionContext) fieldContext_Sighting_lastSeenCoordinate(_ context.C
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "latitude":
-				return ec.fieldContext_LastSeenCoordinate_latitude(ctx, field)
+				return ec.fieldContext_Coordinate_latitude(ctx, field)
 			case "longitude":
-				return ec.fieldContext_LastSeenCoordinate_longitude(ctx, field)
+				return ec.fieldContext_Coordinate_longitude(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type LastSeenCoordinate", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Coordinate", field.Name)
 		},
 	}
 	return fc, nil
@@ -1958,7 +1958,7 @@ func (ec *executionContext) _Tiger_lastSeenCoordinate(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.LastSeenCoordinate, nil
+		return obj.Coordinate, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1970,9 +1970,9 @@ func (ec *executionContext) _Tiger_lastSeenCoordinate(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.LastSeenCoordinate)
+	res := resTmp.(*model.Coordinate)
 	fc.Result = res
-	return ec.marshalNLastSeenCoordinate2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐLastSeenCoordinate(ctx, field.Selections, res)
+	return ec.marshalNCoordinate2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐCoordinate(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Tiger_lastSeenCoordinate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1984,11 +1984,11 @@ func (ec *executionContext) fieldContext_Tiger_lastSeenCoordinate(_ context.Cont
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "latitude":
-				return ec.fieldContext_LastSeenCoordinate_latitude(ctx, field)
+				return ec.fieldContext_Coordinate_latitude(ctx, field)
 			case "longitude":
-				return ec.fieldContext_LastSeenCoordinate_longitude(ctx, field)
+				return ec.fieldContext_Coordinate_longitude(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type LastSeenCoordinate", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Coordinate", field.Name)
 		},
 	}
 	return fc, nil
@@ -3899,8 +3899,8 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputLastSeenCoordinateInput(ctx context.Context, obj interface{}) (model.LastSeenCoordinateInput, error) {
-	var it model.LastSeenCoordinateInput
+func (ec *executionContext) unmarshalInputCoordinateInput(ctx context.Context, obj interface{}) (model.CoordinateInput, error) {
+	var it model.CoordinateInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -3981,7 +3981,7 @@ func (ec *executionContext) unmarshalInputSightingInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"tigerID", "lastSeenTime", "lastSeenCoordinate", "image"}
+	fieldsInOrder := [...]string{"tigerID", "Coordinate", "image"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3995,20 +3995,13 @@ func (ec *executionContext) unmarshalInputSightingInput(ctx context.Context, obj
 				return it, err
 			}
 			it.TigerID = data
-		case "lastSeenTime":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastSeenTime"))
-			data, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
+		case "Coordinate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Coordinate"))
+			data, err := ec.unmarshalNCoordinateInput2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐCoordinateInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.LastSeenTime = data
-		case "lastSeenCoordinate":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastSeenCoordinate"))
-			data, err := ec.unmarshalNLastSeenCoordinateInput2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐLastSeenCoordinateInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.LastSeenCoordinate = data
+			it.Coordinate = data
 		case "image":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image"))
 			data, err := ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
@@ -4059,7 +4052,7 @@ func (ec *executionContext) unmarshalInputTigerInput(ctx context.Context, obj in
 			it.LastSeenTime = data
 		case "lastSeenCoordinate":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lastSeenCoordinate"))
-			data, err := ec.unmarshalNLastSeenCoordinateInput2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐLastSeenCoordinateInput(ctx, v)
+			data, err := ec.unmarshalNCoordinateInput2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐCoordinateInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4184,6 +4177,50 @@ func (ec *executionContext) _AuthOps(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var coordinateImplementors = []string{"Coordinate"}
+
+func (ec *executionContext) _Coordinate(ctx context.Context, sel ast.SelectionSet, obj *model.Coordinate) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, coordinateImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Coordinate")
+		case "latitude":
+			out.Values[i] = ec._Coordinate_latitude(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "longitude":
+			out.Values[i] = ec._Coordinate_longitude(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var createOpsImplementors = []string{"CreateOps"}
 
 func (ec *executionContext) _CreateOps(ctx context.Context, sel ast.SelectionSet, obj *model.CreateOps) graphql.Marshaler {
@@ -4267,50 +4304,6 @@ func (ec *executionContext) _CreateOps(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var lastSeenCoordinateImplementors = []string{"LastSeenCoordinate"}
-
-func (ec *executionContext) _LastSeenCoordinate(ctx context.Context, sel ast.SelectionSet, obj *model.LastSeenCoordinate) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, lastSeenCoordinateImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("LastSeenCoordinate")
-		case "latitude":
-			out.Values[i] = ec._LastSeenCoordinate_latitude(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "longitude":
-			out.Values[i] = ec._LastSeenCoordinate_longitude(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5130,6 +5123,21 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNCoordinate2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐCoordinate(ctx context.Context, sel ast.SelectionSet, v *model.Coordinate) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Coordinate(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNCoordinateInput2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐCoordinateInput(ctx context.Context, v interface{}) (*model.CoordinateInput, error) {
+	res, err := ec.unmarshalInputCoordinateInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNCreateOps2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐCreateOps(ctx context.Context, sel ast.SelectionSet, v model.CreateOps) graphql.Marshaler {
 	return ec._CreateOps(ctx, sel, &v)
 }
@@ -5187,21 +5195,6 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNLastSeenCoordinate2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐLastSeenCoordinate(ctx context.Context, sel ast.SelectionSet, v *model.LastSeenCoordinate) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._LastSeenCoordinate(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNLastSeenCoordinateInput2ᚖgithubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐLastSeenCoordinateInput(ctx context.Context, v interface{}) (*model.LastSeenCoordinateInput, error) {
-	res, err := ec.unmarshalInputLastSeenCoordinateInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNListOps2githubᚗcomᚋnurcholisnandaᚋtigerhallᚑkittensᚋinternalᚋapiᚋgraphᚋmodelᚐListOps(ctx context.Context, sel ast.SelectionSet, v model.ListOps) graphql.Marshaler {

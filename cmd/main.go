@@ -7,6 +7,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/nurcholisnanda/tigerhall-kittens/config"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/directive"
@@ -24,8 +25,6 @@ func graphqlHandler(
 	tigerSvc service.TigerService,
 	sightingSvc service.SightingService,
 ) gin.HandlerFunc {
-	// NewExecutableSchema and Config are in the generated.go file
-	// Resolver is in the resolver.go file
 	c := graph.Config{Resolvers: &graph.Resolver{
 		UserSvc:     userSvc,
 		TigerSvc:    tigerSvc,
@@ -51,6 +50,8 @@ func playgroundHandler() gin.HandlerFunc {
 
 func main() {
 	//setup database
+	godotenv.Load()
+
 	db, err := config.NewDatabase()
 	if err != nil {
 		log.Panic(err)
@@ -64,15 +65,20 @@ func main() {
 	}
 
 	//initializes dependencies
+	mailer := service.NewMailService()
+	s3Client, err := config.NewS3Client()
+	if err != nil {
+		log.Fatalf("Failed to create S3 client: %v", err)
+	}
 	userRepo := repository.NewUserRepoImpl(gormDB)
 	tigerRepo := repository.NewTigerRepositoryImpl(gormDB)
 	sightingRepo := repository.NewSightingRepositoryImpl(gormDB)
-	JWT := service.NewJWT(os.Getenv("SECRET"))
+	JWT := service.NewJWT(os.Getenv("JWT_SECRET"))
 	userSvc := service.NewUserService(userRepo, bcrypt.NewBcrypt(), JWT)
 	tigerSvc := service.NewTigerService(tigerRepo)
-	sightingSvc := service.NewSightingService(sightingRepo, tigerRepo)
+	sightingSvc := service.NewSightingService(sightingRepo, tigerRepo, s3Client)
 	authMiddleware := middlewares.NewAuthMiddleware(userSvc, JWT)
-	notificationSvc := service.NewNotificationService(sightingRepo, userRepo)
+	notificationSvc := service.NewNotificationService(sightingRepo, userRepo, mailer)
 	notificationSvc.StartNotificationConsumer()
 
 	// Setting up Gin

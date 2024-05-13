@@ -39,14 +39,6 @@ func (r *createOpsResolver) CreateSighting(ctx context.Context, obj *model.Creat
 					"details": err.Error(),
 				},
 			}
-		case *helper.InvalidLastSeenTimeError:
-			return nil, &gqlerror.Error{
-				Message: "invalid last seen time",
-				Extensions: map[string]interface{}{
-					"code":    helper.INVALID_INPUT,
-					"details": err.Error(),
-				},
-			}
 		case *helper.TigerNotFound:
 			return nil, &gqlerror.Error{
 				Message: "tiger not found",

@@ -47,11 +47,11 @@ func (s *tigerService) CreateTiger(ctx context.Context, input *model.TigerInput)
 
 	// Data Mapping
 	tiger := &model.Tiger{
-		ID:                 uuid.NewString(),
-		Name:               input.Name,
-		DateOfBirth:        input.DateOfBirth,
-		LastSeenTime:       input.LastSeenTime,
-		LastSeenCoordinate: (*model.LastSeenCoordinate)(input.LastSeenCoordinate),
+		ID:           uuid.NewString(),
+		Name:         input.Name,
+		DateOfBirth:  input.DateOfBirth,
+		LastSeenTime: input.LastSeenTime,
+		Coordinate:   (*model.Coordinate)(input.LastSeenCoordinate),
 	}
 
 	// Database Interaction
