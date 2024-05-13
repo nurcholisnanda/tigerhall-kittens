@@ -4,6 +4,7 @@ package service
 import (
 	"context"
 	"net/http"
+	"sync"
 
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
@@ -12,7 +13,7 @@ import (
 )
 
 // Channel for sending notifications
-var NotificationChan = make(chan model.Notification)
+var notificationChan = make(chan model.Notification)
 
 // NotificationService handles notification logic
 type notificationService struct {
@@ -34,25 +35,47 @@ func NewNotificationService(
 	}
 }
 
-// StartNotificationConsumer starts the background goroutine to consume notifications
-func (s *notificationService) StartNotificationConsumer() {
-	ctx := context.Background()
-	go func() {
-		for notification := range NotificationChan {
-			// Fetch users who reported sightings of the same tiger
-			previousSighters, err := s.FetchPreviousSighters(ctx, notification.TigerID)
-			if err != nil {
-				logger.Logger(ctx).Error("Error fetching previous sighters:", err)
-				continue // Skip this notification if there's an error
-			}
+type NotifService interface {
+	SendNotification(notif model.Notification)
+}
 
-			// Send email notifications
-			done := make(chan struct{})
-			for _, sighter := range previousSighters {
-				s.mailSvc.Send(ctx, sighter.Email, "notif_mail.tmpl", notification, done)
-			}
+func (s *notificationService) SendNotification(notif model.Notification) {
+	notificationChan <- notif
+}
+
+// StartNotificationConsumer starts the background goroutine to consume notifications
+func (s *notificationService) StartNotificationConsumer(ctx context.Context) {
+	go func(parentCtx context.Context) {
+		for notification := range notificationChan {
+			func(notification model.Notification) {
+				ctx, cancel := context.WithCancel(parentCtx) // Create child context
+				defer cancel()
+
+				// Fetch previous sighters
+				previousSighters, err := s.FetchPreviousSighters(ctx, notification.TigerID)
+				if err != nil {
+					logger.Logger(ctx).Error("Failed to fetch previous sighters:", err)
+					return // Skip to the next notification
+				}
+
+				// Send email notifications
+				var wg sync.WaitGroup
+				for _, sighter := range previousSighters {
+					wg.Add(1)
+					go func(sighter *model.User) {
+						defer wg.Done()
+						done := make(chan struct{})
+						notification.Sighter = sighter.Name
+						if err := s.mailSvc.Send(ctx, sighter.Email, "notif_mail.tmpl", notification, done); err != nil {
+							logger.Logger(ctx).Error("Failed to send email notification:", err)
+							close(done)
+						}
+					}(sighter)
+					wg.Wait()
+				}
+			}(notification)
 		}
-	}()
+	}(ctx) // Pass the parent context to the goroutine
 }
 
 // fetchPreviousSighters (Placeholder - you need to implement this)
@@ -63,14 +86,8 @@ func (s *notificationService) FetchPreviousSighters(ctx context.Context, tigerID
 		return nil, helper.NewCustomError("Failed to fetch previous sighters", http.StatusInternalServerError)
 	}
 
-	// Deduplicate user IDs (in case a user reported multiple sightings)
-	uniqueUserIDs := make(map[string]bool)
-	for _, userID := range userIDs {
-		uniqueUserIDs[userID] = true
-	}
-
 	var previousSighters []*model.User
-	for userID := range uniqueUserIDs {
+	for _, userID := range userIDs {
 		user, err := s.userRepo.GetUserByID(ctx, userID) // Replace with your user repository function
 		if err != nil {
 			logger.Logger(ctx).Error("Failed to fetch user by ID: ", err)
@@ -80,4 +97,8 @@ func (s *notificationService) FetchPreviousSighters(ctx context.Context, tigerID
 	}
 
 	return previousSighters, nil
+}
+
+func (s *notificationService) CloseNotificationChannel() {
+	close(notificationChan)
 }

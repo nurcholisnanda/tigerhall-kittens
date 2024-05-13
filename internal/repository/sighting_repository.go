@@ -46,8 +46,8 @@ func (r *SightingRepositoryImpl) GetLatestSightingByTigerID(ctx context.Context,
 func (r *SightingRepositoryImpl) ListUserCreatedSightingByTigerID(ctx context.Context, tigerID string) ([]string, error) {
 	var createdBy []string
 
-	if err := r.db.WithContext(ctx).Table("sightings").Where("tiger_id = ?", tigerID).
-		Pluck("created_by", &createdBy).Error; err != nil {
+	if err := r.db.WithContext(ctx).Table("sightings").Where("tiger_id = ?", tigerID).Distinct("created_by").
+		Find(&createdBy).Error; err != nil {
 		return nil, err
 	}
 	return createdBy, nil

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
@@ -65,7 +66,6 @@ func main() {
 	}
 
 	//initializes dependencies
-	mailer := service.NewMailService()
 	s3Client, err := config.NewS3Client()
 	if err != nil {
 		log.Fatalf("Failed to create S3 client: %v", err)
@@ -73,13 +73,15 @@ func main() {
 	userRepo := repository.NewUserRepoImpl(gormDB)
 	tigerRepo := repository.NewTigerRepositoryImpl(gormDB)
 	sightingRepo := repository.NewSightingRepositoryImpl(gormDB)
+	mailer := service.NewMailService()
+	notifSvc := service.NewNotificationService(sightingRepo, userRepo, mailer)
 	JWT := service.NewJWT(os.Getenv("JWT_SECRET"))
 	userSvc := service.NewUserService(userRepo, bcrypt.NewBcrypt(), JWT)
 	tigerSvc := service.NewTigerService(tigerRepo)
-	sightingSvc := service.NewSightingService(sightingRepo, tigerRepo, s3Client)
+	sightingSvc := service.NewSightingService(notifSvc, sightingRepo, tigerRepo, s3Client)
 	authMiddleware := middlewares.NewAuthMiddleware(userSvc, JWT)
-	notificationSvc := service.NewNotificationService(sightingRepo, userRepo, mailer)
-	notificationSvc.StartNotificationConsumer()
+	defer notifSvc.CloseNotificationChannel()
+	notifSvc.StartNotificationConsumer(context.Background())
 
 	// Setting up Gin
 	r := gin.Default()

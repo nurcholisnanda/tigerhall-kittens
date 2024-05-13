@@ -28,17 +28,20 @@ import (
 )
 
 type sightingService struct {
+	notifSvc     NotifService
 	sightingRepo repository.SightingRepository
 	tigerRepo    repository.TigerRepository
 	s3Client     *config.S3Client
 }
 
 func NewSightingService(
+	notifSvc NotifService,
 	sightingRepo repository.SightingRepository,
 	tigerRepo repository.TigerRepository,
 	s3Client *config.S3Client,
 ) SightingService {
 	return &sightingService{
+		notifSvc:     notifSvc,
 		sightingRepo: sightingRepo,
 		tigerRepo:    tigerRepo,
 		s3Client:     s3Client,
@@ -125,7 +128,7 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 	}
 
 	// Send the notification
-	NotificationChan <- notification
+	s.notifSvc.SendNotification(notification)
 
 	return newSighting, nil
 }
@@ -169,7 +172,7 @@ func (s *sightingService) GetResizedImage(ctx context.Context, inputImage *graph
 	}
 
 	objectURL := fmt.Sprintf("https://%s.r2.cloudflarestorage.com/%s/%s", os.Getenv("R2_ACCOUNT_ID"), bucketName, objectName)
-	logger.Logger(ctx).Info("Image uploaded to R2", "objectURL", objectURL)
+	logger.Logger(ctx).Info("Image uploaded to R2. ", "objectURL: ", objectURL)
 	return objectURL, nil
 }
 

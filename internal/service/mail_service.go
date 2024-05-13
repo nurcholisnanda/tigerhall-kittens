@@ -9,9 +9,11 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-mail/mail/v2"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/mailer"
 )
 
@@ -88,15 +90,19 @@ func (m *mailService) Send(ctx context.Context, recipient, templateFile string, 
 	// opens a connection to the SMTP server, sends the message, then closes the
 	// connection. If there is a timeout, it will return a "dial tcp: i/o timeout"
 	// error.
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		defer close(done)
 		err = m.mailer.DialAndSend(m.dialer, msg)
 		if err != nil {
 			fmt.Println("error sending email", err.Error())
 			return
 		}
-		fmt.Println("successfully sending email")
+		logger.Logger(ctx).Info("Sent email notification to user:", recipient)
 	}()
+	wg.Wait()
 
 	return nil
 }
