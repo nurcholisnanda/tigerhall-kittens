@@ -35,11 +35,6 @@ type SightingService interface {
 }
 
 //go:generate mockgen -source=service.go -destination=mock/service.go -package=mock
-type MailerInterface interface {
-	Send(ctx context.Context, recipient, templateFile string, data interface{}) error
-}
-
-//go:generate mockgen -source=service.go -destination=mock/service.go -package=mock
 type NotifService interface {
 	SendNotification(notif model.Notification)
 	StartNotificationConsumer(ctx context.Context)

@@ -1,4 +1,4 @@
-package service
+package mailer
 
 import (
 	"context"
@@ -61,7 +61,6 @@ func Test_mailer_Send(t *testing.T) {
 		{
 			name: "error template file",
 			m: &mailService{
-				dialer: NewMailService().dialer,
 				sender: NewMailService().sender,
 				mailer: mailer,
 			},
@@ -70,8 +69,59 @@ func Test_mailer_Send(t *testing.T) {
 				recipient:    "allendragneel@gmail.com",
 				templateFile: "notifmail.tmpl",
 				data: map[string]interface{}{
-					"name":    "nanda",
-					"otpCode": 1234,
+					"Sighter": "nanda",
+					"TigerID": "2",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "error template file with no subject",
+			m: &mailService{
+				sender: NewMailService().sender,
+				mailer: mailer,
+			},
+			args: args{
+				ctx:          context.Background(),
+				recipient:    "allendragneel@gmail.com",
+				templateFile: "test_nosubject.tmpl",
+				data: map[string]interface{}{
+					"Sighter": "nanda",
+					"TigerID": "2",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "error template file with no html body",
+			m: &mailService{
+				sender: NewMailService().sender,
+				mailer: mailer,
+			},
+			args: args{
+				ctx:          context.Background(),
+				recipient:    "allendragneel@gmail.com",
+				templateFile: "test_nohtmlbody.tmpl",
+				data: map[string]interface{}{
+					"Sighter": "nanda",
+					"TigerID": "2",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "error template file with no plain body",
+			m: &mailService{
+				sender: NewMailService().sender,
+				mailer: mailer,
+			},
+			args: args{
+				ctx:          context.Background(),
+				recipient:    "allendragneel@gmail.com",
+				templateFile: "test_noplainbody.tmpl",
+				data: map[string]interface{}{
+					"Sighter": "nanda",
+					"TigerID": "2",
 				},
 			},
 			wantErr: true,
@@ -79,7 +129,6 @@ func Test_mailer_Send(t *testing.T) {
 		{
 			name: "error dial and send mailer helper",
 			m: &mailService{
-				dialer: NewMailService().dialer,
 				sender: NewMailService().sender,
 				mailer: mailer,
 			},
@@ -88,19 +137,18 @@ func Test_mailer_Send(t *testing.T) {
 				recipient:    "allendragneel@gmail.com",
 				templateFile: "notif_mail.tmpl",
 				data: map[string]interface{}{
-					"name":    "nanda",
-					"otpCode": 1234,
+					"Sighter": "nanda",
+					"TigerID": "2",
 				},
 			},
 			wantErr: true,
 			mocks: []*gomock.Call{
-				mailer.EXPECT().DialAndSend(gomock.Any(), gomock.Any()).Return(errors.New("any error")),
+				mailer.EXPECT().DialAndSend(gomock.Any()).Return(errors.New("any error")),
 			},
 		},
 		{
 			name: "success",
 			m: &mailService{
-				dialer: NewMailService().dialer,
 				sender: NewMailService().sender,
 				mailer: mailer,
 			},
@@ -109,13 +157,13 @@ func Test_mailer_Send(t *testing.T) {
 				recipient:    "allendragneel@gmail.com",
 				templateFile: "notif_mail.tmpl",
 				data: map[string]interface{}{
-					"name":    "nanda",
-					"otpCode": 1234,
+					"Sighter": "nanda",
+					"TigerID": "2",
 				},
 			},
 			wantErr: false,
 			mocks: []*gomock.Call{
-				mailer.EXPECT().DialAndSend(gomock.Any(), gomock.Any()).Return(nil),
+				mailer.EXPECT().DialAndSend(gomock.Any()).Return(nil),
 			},
 		},
 	}

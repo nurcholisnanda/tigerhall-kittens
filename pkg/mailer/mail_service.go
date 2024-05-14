@@ -1,45 +1,37 @@
-package service
+package mailer
 
 import (
 	"bytes"
 	"context"
 	"embed"
 	"html/template"
-	"log"
 	"os"
-	"strconv"
-	"time"
 
 	"github.com/go-mail/mail/v2"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
-	"github.com/nurcholisnanda/tigerhall-kittens/pkg/mailer"
 )
 
 //go:embed "templates"
 var templateFS embed.FS
 
 type mailService struct {
-	dialer *mail.Dialer
 	sender string
-	mailer mailer.MailerInterface
+	mailer MailerInterface
 }
 
 func NewMailService() *mailService {
-	mailer := mailer.New()
-	port, err := strconv.Atoi(os.Getenv("MAIL_PORT"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Initialize a new mail.Dialer instance with the given SMTP server settings. We
-	// also configure this to use a 10-second timeout whenever we send an email.
-	dialer := mail.NewDialer(os.Getenv("MAIL_HOST"), port, os.Getenv("MAIL_USER"), os.Getenv("MAIL_PASSWORD"))
-	dialer.Timeout = 10 * time.Second
+	mailer := NewMailer()
+
 	// Return a Mailer instance containing the dialer and sender information.
 	return &mailService{
-		dialer: dialer,
 		sender: os.Getenv("MAIL_SENDER"),
 		mailer: mailer,
 	}
+}
+
+//go:generate mockgen -source=mail_service.go -destination=mock/mail_service.go -package=mock
+type MailService interface {
+	Send(ctx context.Context, recipient, templateFile string, data interface{}) error
 }
 
 // Send function takes the recipient email addresses,
@@ -85,7 +77,7 @@ func (m *mailService) Send(ctx context.Context, recipient, templateFile string, 
 	// opens a connection to the SMTP server, sends the message, then closes the
 	// connection. If there is a timeout, it will return a "dial tcp: i/o timeout"
 	// error.
-	err = m.mailer.DialAndSend(m.dialer, msg)
+	err = m.mailer.DialAndSend(msg)
 	if err != nil {
 		logger.Logger(ctx).Error("error sending email : ", err.Error())
 		return err

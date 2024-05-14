@@ -10,6 +10,7 @@ import (
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/service"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/bcrypt"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/mailer"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/storage"
 )
 
@@ -43,7 +44,7 @@ func InitDependencies() (Dependencies, error) {
 	userRepo := repository.NewUserRepoImpl(gormDB)
 	tigerRepo := repository.NewTigerRepositoryImpl(gormDB)
 	sightingRepo := repository.NewSightingRepositoryImpl(gormDB)
-	mailer := service.NewMailService()
+	mailer := mailer.NewMailService()
 	notificationSvc := service.NewNotificationService(sightingRepo, userRepo, mailer)
 	JWT := service.NewJWT(os.Getenv("JWT_SECRET"))
 	userSvc := service.NewUserService(userRepo, bcrypt.NewBcrypt(), JWT)

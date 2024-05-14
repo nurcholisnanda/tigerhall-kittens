@@ -40,15 +40,15 @@ func (m *MockMailerInterface) EXPECT() *MockMailerInterfaceMockRecorder {
 }
 
 // DialAndSend mocks base method.
-func (m *MockMailerInterface) DialAndSend(dialer *mail.Dialer, msg *mail.Message) error {
+func (m *MockMailerInterface) DialAndSend(msg *mail.Message) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DialAndSend", dialer, msg)
+	ret := m.ctrl.Call(m, "DialAndSend", msg)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DialAndSend indicates an expected call of DialAndSend.
-func (mr *MockMailerInterfaceMockRecorder) DialAndSend(dialer, msg any) *gomock.Call {
+func (mr *MockMailerInterfaceMockRecorder) DialAndSend(msg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DialAndSend", reflect.TypeOf((*MockMailerInterface)(nil).DialAndSend), dialer, msg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DialAndSend", reflect.TypeOf((*MockMailerInterface)(nil).DialAndSend), msg)
 }

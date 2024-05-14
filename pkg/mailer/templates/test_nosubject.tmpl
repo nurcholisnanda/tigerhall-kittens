@@ -1,0 +1,43 @@
+{{define "nosubject"}}Tiger Sighting Alert!{{end}}
+
+{{define "plainBody"}}
+Dear {{.Sighter}},
+
+We have received a new sighting report for tiger {{.TigerID}}.
+
+The new sighting was reported on {{.Timestamp.Format "2006-01-02 15:04:05 UTC"}} at coordinates (Lat = {{.Latitude}}, Lon = {{.Longitude}}).
+
+You can view the new sighting details and image in the Tigerhall Kittens app.
+
+Thank you for your valuable contribution to tiger conservation!
+
+Sincerely,
+The Tigerhall Kittens Team
+{{end}}
+
+{{define "htmlBody"}}
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Tiger Sighting Alert!</title>
+</head>
+<body>
+
+<p>Dear {{.Sighter}},</p>
+
+<p>We have received a new sighting report for tiger <b>{{.TigerID}}.</b>
+
+<p>The new sighting was reported on <b>{{.Timestamp.Format "2006-01-02 15:04:05"}} UTC</b> at coordinates <b>(Lat = {{.Latitude}}, Lon = {{.Longitude}})</b>.</p>
+
+<p>You can view the new sighting details and image in the Tigerhall Kittens app</p>  
+
+<p>Thank you for your valuable contribution to tiger conservation!</p>
+
+<p>Sincerely,<br>
+The Tigerhall Kittens Team</p>
+
+</body>
+</html>
+{{end}}

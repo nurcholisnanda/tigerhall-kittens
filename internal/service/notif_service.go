@@ -4,11 +4,13 @@ package service
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/errorhandler"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/mailer"
 )
 
 // Channel for sending notifications
@@ -18,14 +20,14 @@ var notificationChan = make(chan model.Notification)
 type notificationService struct {
 	sightingRepo repository.SightingRepository
 	userRepo     repository.UserRepository
-	mailSvc      MailerInterface
+	mailSvc      mailer.MailService
 }
 
 // NewNotificationService creates a new NotificationService
 func NewNotificationService(
 	sr repository.SightingRepository,
 	ur repository.UserRepository,
-	mailSvc MailerInterface,
+	mailSvc mailer.MailService,
 ) NotifService {
 	return &notificationService{
 		sightingRepo: sr,
@@ -43,7 +45,7 @@ func (s *notificationService) StartNotificationConsumer(ctx context.Context) {
 	go func(parentCtx context.Context) {
 		for notification := range notificationChan {
 			func(notification model.Notification) {
-				ctx, cancel := context.WithCancel(parentCtx) // Create child context
+				ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 				defer cancel()
 
 				// Fetch previous sighters
@@ -55,10 +57,8 @@ func (s *notificationService) StartNotificationConsumer(ctx context.Context) {
 
 				// Send email notifications
 				for _, sighter := range previousSighters {
-					go func(sighter *model.User) {
-						notification.Sighter = sighter.Name
-						s.mailSvc.Send(ctx, sighter.Email, "notif_mail.tmpl", notification)
-					}(sighter)
+					notification.Sighter = sighter.Name
+					s.mailSvc.Send(ctx, sighter.Email, "notif_mail.tmpl", notification)
 				}
 			}(notification)
 		}

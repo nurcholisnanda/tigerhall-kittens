@@ -6,12 +6,15 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository/mock"
-	mockSvc "github.com/nurcholisnanda/tigerhall-kittens/internal/service/mock"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/mailer"
+	mockMailer "github.com/nurcholisnanda/tigerhall-kittens/pkg/mailer/mock"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
@@ -19,11 +22,11 @@ func TestNewNotificationService(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	sightingRepo := mock.NewMockSightingRepository(ctrl)
 	userRepo := mock.NewMockUserRepository(ctrl)
-	mockSvc := mockSvc.NewMockMailerInterface(ctrl)
+	mockSvc := mockMailer.NewMockMailService(ctrl)
 	type args struct {
 		sr     repository.SightingRepository
 		ur     repository.UserRepository
-		mailer MailerInterface
+		mailer mailer.MailService
 	}
 	tests := []struct {
 		name string
@@ -45,27 +48,6 @@ func TestNewNotificationService(t *testing.T) {
 			if got := NewNotificationService(tt.args.sr, tt.args.ur, tt.args.mailer); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewNotificationService() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func Test_notificationService_StartNotificationConsumer(t *testing.T) {
-	type fields struct {
-		sightingRepo repository.SightingRepository
-		userRepo     repository.UserRepository
-	}
-	tests := []struct {
-		name   string
-		fields fields
-	}{}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-			s := &notificationService{
-				sightingRepo: tt.fields.sightingRepo,
-				userRepo:     tt.fields.userRepo,
-			}
-			s.StartNotificationConsumer(ctx)
 		})
 	}
 }
@@ -156,6 +138,188 @@ func Test_notificationService_FetchPreviousSighters(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("notificationService.FetchPreviousSighters() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_notificationService_SendNotification(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	notif := model.Notification{
+		Sighter: "nanda",
+		TigerID: "2",
+	}
+	type fields struct {
+		sightingRepo repository.SightingRepository
+		userRepo     repository.UserRepository
+		mailSvc      mailer.MailService
+	}
+	type args struct {
+		notif model.Notification
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			name: "tested",
+			fields: fields{
+				sightingRepo: mock.NewMockSightingRepository(ctrl),
+				userRepo:     mock.NewMockUserRepository(ctrl),
+				mailSvc:      mockMailer.NewMockMailService(ctrl),
+			},
+			args: args{
+				notif: notif,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &notificationService{
+				sightingRepo: tt.fields.sightingRepo,
+				userRepo:     tt.fields.userRepo,
+				mailSvc:      tt.fields.mailSvc,
+			}
+			go func() { // Goroutine to receive from the channel
+				time.Sleep(1 * time.Second)
+				receivedNotif := <-notificationChan
+				assert.Equal(t, tt.args.notif, receivedNotif) // Verify the correct notification was sent
+			}()
+			s.SendNotification(tt.args.notif)
+		})
+	}
+}
+
+func Test_notificationService_CloseNotificationChannel(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	type fields struct {
+		sightingRepo repository.SightingRepository
+		userRepo     repository.UserRepository
+		mailSvc      mailer.MailService
+	}
+	tests := []struct {
+		name   string
+		fields fields
+	}{
+		{
+			name: "tested",
+			fields: fields{
+				sightingRepo: mock.NewMockSightingRepository(ctrl),
+				userRepo:     mock.NewMockUserRepository(ctrl),
+				mailSvc:      mockMailer.NewMockMailService(ctrl),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &notificationService{
+				sightingRepo: tt.fields.sightingRepo,
+				userRepo:     tt.fields.userRepo,
+				mailSvc:      tt.fields.mailSvc,
+			}
+			// Start a goroutine to attempt sending a message after a delay
+			go func() {
+				time.Sleep(100 * time.Millisecond) // Wait a short time to ensure channel is created
+				defer func() {
+					if r := recover(); r != nil {
+						t.Errorf("Sending to closed channel should not panic, but got: %v", r)
+					}
+				}()
+				notificationChan <- model.Notification{}
+			}()
+
+			// Close the channel
+			s.CloseNotificationChannel()
+
+			// Verify that the channel is closed
+			select {
+			case _, ok := <-notificationChan:
+				if ok {
+					t.Fatal("Notification channel should be closed after CloseNotificationChannel")
+				}
+			default:
+				// Channel is closed, as expected
+			}
+		})
+	}
+}
+
+func Test_notificationService_StartNotificationConsumer(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	sightingRepo := mock.NewMockSightingRepository(ctrl)
+	userRepo := mock.NewMockUserRepository(ctrl)
+	mockSvc := mockMailer.NewMockMailService(ctrl)
+	type fields struct {
+		sightingRepo repository.SightingRepository
+		userRepo     repository.UserRepository
+		mailSvc      mailer.MailService
+	}
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		mocks  []*gomock.Call
+	}{
+		{
+			name: "fail to fetch previous sighters",
+			fields: fields{
+				sightingRepo: sightingRepo,
+				userRepo:     userRepo,
+				mailSvc:      mockSvc,
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			mocks: []*gomock.Call{
+				sightingRepo.EXPECT().ListUserCreatedSightingByTigerID(gomock.Any(), gomock.Any()).
+					Return(nil, errors.New("any error")),
+			},
+		},
+		{
+			name: "success",
+			fields: fields{
+				sightingRepo: sightingRepo,
+				userRepo:     userRepo,
+				mailSvc:      mockSvc,
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			mocks: []*gomock.Call{
+				sightingRepo.EXPECT().ListUserCreatedSightingByTigerID(gomock.Any(), gomock.Any()).
+					Return([]string{"1"}, nil),
+				userRepo.EXPECT().GetUserByID(gomock.Any(), gomock.Any()).
+					Return(&model.User{ID: "1"}, nil),
+				mockSvc.EXPECT().Send(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &notificationService{
+				sightingRepo: tt.fields.sightingRepo,
+				userRepo:     tt.fields.userRepo,
+				mailSvc:      tt.fields.mailSvc,
+			}
+			// Create a context with timeout for the test
+			ctx, cancel := context.WithTimeout(tt.args.ctx, 5*time.Second)
+			defer cancel()
+
+			// Start the consumer
+			notificationChan = make(chan model.Notification)
+			defer s.CloseNotificationChannel()
+			s.StartNotificationConsumer(ctx)
+
+			// Send test notification
+			notificationChan <- model.Notification{
+				TigerID:   "1",
+				Sighter:   "1",
+				Timestamp: time.Now(),
 			}
 		})
 	}
