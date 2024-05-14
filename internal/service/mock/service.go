@@ -285,15 +285,50 @@ func (m *MockMailerInterface) EXPECT() *MockMailerInterfaceMockRecorder {
 }
 
 // Send mocks base method.
-func (m *MockMailerInterface) Send(recipient, templateFile string, data any, done chan struct{}) error {
+func (m *MockMailerInterface) Send(ctx context.Context, recipient, templateFile string, data any, done chan struct{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", recipient, templateFile, data, done)
+	ret := m.ctrl.Call(m, "Send", ctx, recipient, templateFile, data, done)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Send indicates an expected call of Send.
-func (mr *MockMailerInterfaceMockRecorder) Send(recipient, templateFile, data, done any) *gomock.Call {
+func (mr *MockMailerInterfaceMockRecorder) Send(ctx, recipient, templateFile, data, done any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockMailerInterface)(nil).Send), recipient, templateFile, data, done)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockMailerInterface)(nil).Send), ctx, recipient, templateFile, data, done)
+}
+
+// MockNotifService is a mock of NotifService interface.
+type MockNotifService struct {
+	ctrl     *gomock.Controller
+	recorder *MockNotifServiceMockRecorder
+}
+
+// MockNotifServiceMockRecorder is the mock recorder for MockNotifService.
+type MockNotifServiceMockRecorder struct {
+	mock *MockNotifService
+}
+
+// NewMockNotifService creates a new mock instance.
+func NewMockNotifService(ctrl *gomock.Controller) *MockNotifService {
+	mock := &MockNotifService{ctrl: ctrl}
+	mock.recorder = &MockNotifServiceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockNotifService) EXPECT() *MockNotifServiceMockRecorder {
+	return m.recorder
+}
+
+// SendNotification mocks base method.
+func (m *MockNotifService) SendNotification(notif model.Notification) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SendNotification", notif)
+}
+
+// SendNotification indicates an expected call of SendNotification.
+func (mr *MockNotifServiceMockRecorder) SendNotification(notif any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendNotification", reflect.TypeOf((*MockNotifService)(nil).SendNotification), notif)
 }

@@ -38,3 +38,8 @@ type SightingService interface {
 type MailerInterface interface {
 	Send(ctx context.Context, recipient, templateFile string, data interface{}, done chan struct{}) error
 }
+
+//go:generate mockgen -source=service.go -destination=mock/service.go -package=mock
+type NotifService interface {
+	SendNotification(notif model.Notification)
+}

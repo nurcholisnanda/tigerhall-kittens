@@ -35,10 +35,6 @@ func NewNotificationService(
 	}
 }
 
-type NotifService interface {
-	SendNotification(notif model.Notification)
-}
-
 func (s *notificationService) SendNotification(notif model.Notification) {
 	notificationChan <- notif
 }

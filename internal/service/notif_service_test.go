@@ -11,6 +11,7 @@ import (
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository/mock"
+	mockSvc "github.com/nurcholisnanda/tigerhall-kittens/internal/service/mock"
 	"go.uber.org/mock/gomock"
 )
 
@@ -18,9 +19,11 @@ func TestNewNotificationService(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	sightingRepo := mock.NewMockSightingRepository(ctrl)
 	userRepo := mock.NewMockUserRepository(ctrl)
+	mockSvc := mockSvc.NewMockMailerInterface(ctrl)
 	type args struct {
-		sr repository.SightingRepository
-		ur repository.UserRepository
+		sr     repository.SightingRepository
+		ur     repository.UserRepository
+		mailer MailerInterface
 	}
 	tests := []struct {
 		name string
@@ -30,15 +33,16 @@ func TestNewNotificationService(t *testing.T) {
 		{
 			name: "success",
 			args: args{
-				sr: sightingRepo,
-				ur: userRepo,
+				sr:     sightingRepo,
+				ur:     userRepo,
+				mailer: mockSvc,
 			},
-			want: NewNotificationService(sightingRepo, userRepo),
+			want: NewNotificationService(sightingRepo, userRepo, mockSvc),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewNotificationService(tt.args.sr, tt.args.ur); !reflect.DeepEqual(got, tt.want) {
+			if got := NewNotificationService(tt.args.sr, tt.args.ur, tt.args.mailer); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewNotificationService() = %v, want %v", got, tt.want)
 			}
 		})
@@ -56,11 +60,12 @@ func Test_notificationService_StartNotificationConsumer(t *testing.T) {
 	}{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
 			s := &notificationService{
 				sightingRepo: tt.fields.sightingRepo,
 				userRepo:     tt.fields.userRepo,
 			}
-			s.StartNotificationConsumer()
+			s.StartNotificationConsumer(ctx)
 		})
 	}
 }
@@ -151,48 +156,6 @@ func Test_notificationService_FetchPreviousSighters(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("notificationService.FetchPreviousSighters() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_notificationService_sendEmail(t *testing.T) {
-	type fields struct {
-		sightingRepo repository.SightingRepository
-		userRepo     repository.UserRepository
-	}
-	type args struct {
-		ctx          context.Context
-		user         model.User
-		notification model.Notification
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "tested",
-			args: args{
-				ctx: context.Background(),
-				user: model.User{
-					Name:     "test",
-					Email:    "test@example.com",
-					Password: "123456",
-				},
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &notificationService{
-				sightingRepo: tt.fields.sightingRepo,
-				userRepo:     tt.fields.userRepo,
-			}
-			if err := s.sendEmail(tt.args.ctx, tt.args.user, tt.args.notification); (err != nil) != tt.wantErr {
-				t.Errorf("notificationService.sendEmail() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -6,12 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// LastSeenCoordinate represents a latitude and longitude pair where the tiger last seen
-type LastSeenCoordinate struct {
-	Latitude  float64 `json:"latitude" gorm:"not null"`
-	Longitude float64 `json:"longitude" gorm:"not null"`
-}
-
 type Tiger struct {
 	ID           string    `json:"id"`
 	Name         string    `json:"name" gorm:"type:varchar(100);not null;unique"`

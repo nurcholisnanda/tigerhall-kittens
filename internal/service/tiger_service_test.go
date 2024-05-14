@@ -45,11 +45,11 @@ func TestNewTigerService(t *testing.T) {
 func Test_tigerService_CreateTiger(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	tigerRepo := mockRepo.NewMockTigerRepository(ctrl)
-	invalidCoordinate := model.LastSeenCoordinateInput{
+	invalidCoordinate := model.CoordinateInput{
 		Latitude:  -25,
 		Longitude: 255,
 	}
-	coordinate := model.LastSeenCoordinateInput{
+	coordinate := model.CoordinateInput{
 		Latitude:  26,
 		Longitude: 150,
 	}
@@ -63,11 +63,11 @@ func Test_tigerService_CreateTiger(t *testing.T) {
 	validInput.LastSeenCoordinate = &coordinate
 
 	tiger := &model.Tiger{
-		ID:                 uuid.NewString(),
-		Name:               "tiger a",
-		DateOfBirth:        input.DateOfBirth,
-		LastSeenTime:       input.LastSeenTime,
-		LastSeenCoordinate: (*model.LastSeenCoordinate)(&coordinate),
+		ID:           uuid.NewString(),
+		Name:         "tiger a",
+		DateOfBirth:  input.DateOfBirth,
+		LastSeenTime: input.LastSeenTime,
+		Coordinate:   (*model.Coordinate)(&coordinate),
 	}
 
 	type fields struct {

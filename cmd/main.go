@@ -16,6 +16,7 @@ import (
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/service"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/bcrypt"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/storage"
 )
 
 const defaultPort = "8080"
@@ -66,7 +67,7 @@ func main() {
 	}
 
 	//initializes dependencies
-	s3Client, err := config.NewS3Client()
+	s3Client, err := storage.NewS3Client()
 	if err != nil {
 		log.Fatalf("Failed to create S3 client: %v", err)
 	}

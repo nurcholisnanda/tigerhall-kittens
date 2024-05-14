@@ -11,19 +11,16 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/google/uuid"
 	"github.com/nfnt/resize"
-	"github.com/nurcholisnanda/tigerhall-kittens/config"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/storage"
 	"gorm.io/gorm"
 )
 
@@ -31,14 +28,14 @@ type sightingService struct {
 	notifSvc     NotifService
 	sightingRepo repository.SightingRepository
 	tigerRepo    repository.TigerRepository
-	s3Client     *config.S3Client
+	s3Client     storage.S3Interface
 }
 
 func NewSightingService(
 	notifSvc NotifService,
 	sightingRepo repository.SightingRepository,
 	tigerRepo repository.TigerRepository,
-	s3Client *config.S3Client,
+	s3Client storage.S3Interface,
 ) SightingService {
 	return &sightingService{
 		notifSvc:     notifSvc,
@@ -158,20 +155,11 @@ func (s *sightingService) GetResizedImage(ctx context.Context, inputImage *graph
 	}
 
 	// Upload to R2
-	bucketName := os.Getenv("R2_BUCKET_NAME") // Get bucket name from env vars
-
-	objectName := fmt.Sprintf("%s.%s", uuid.NewString(), format)
-	_, err = s.s3Client.Client.PutObject(&s3.PutObjectInput{
-		Bucket: aws.String(bucketName),
-		Key:    aws.String(objectName),
-		Body:   bytes.NewReader(buf.Bytes()),
-	})
+	objectURL, err := s.s3Client.PutObject(format, buf)
 	if err != nil {
 		logger.Logger(ctx).Error("Error uploading image to R2", "error", err)
 		return "", fmt.Errorf("error uploading image to R2: %w", err)
 	}
-
-	objectURL := fmt.Sprintf("https://%s.r2.cloudflarestorage.com/%s/%s", os.Getenv("R2_ACCOUNT_ID"), bucketName, objectName)
 	logger.Logger(ctx).Info("Image uploaded to R2. ", "objectURL: ", objectURL)
 	return objectURL, nil
 }
