@@ -31,28 +31,25 @@ func (r *createOpsResolver) CreateSighting(ctx context.Context, obj *model.Creat
 	if err != nil {
 		// Error Handling in the Resolver
 		switch err.(type) {
-		case *errorhandler.InvalidCoordinatesError:
+		case *errorhandler.InvalidInputError:
 			return nil, &gqlerror.Error{
-				Message: "invalid coordinates",
+				Message: err.Error(),
 				Extensions: map[string]interface{}{
-					"code":    errorhandler.INVALID_INPUT,
-					"details": err.Error(),
+					"code": errorhandler.INVALID_INPUT,
 				},
 			}
-		case *errorhandler.TigerNotFound:
+		case *errorhandler.NotFoundError:
 			return nil, &gqlerror.Error{
-				Message: "tiger not found",
+				Message: err.Error(),
 				Extensions: map[string]interface{}{
-					"code":    errorhandler.NOT_FOUND,
-					"details": err.Error(),
+					"code": errorhandler.NOT_FOUND,
 				},
 			}
 		case *errorhandler.SightingTooCloseError:
 			return nil, &gqlerror.Error{
-				Message: "slighting too close",
+				Message: err.Error(),
 				Extensions: map[string]interface{}{
-					"code":    errorhandler.CONFLICT,
-					"details": err.Error(),
+					"code": errorhandler.CONFLICT,
 				},
 			}
 		default:
@@ -70,36 +67,18 @@ func (r *createOpsResolver) CreateTiger(ctx context.Context, obj *model.CreateOp
 	tiger, err := r.TigerSvc.CreateTiger(ctx, &input)
 	if err != nil {
 		switch err.(type) {
-		case *errorhandler.InvalidCoordinatesError:
-			return nil, &gqlerror.Error{
-				Message: "invalid coordinates",
-				Extensions: map[string]interface{}{
-					"code":    errorhandler.INVALID_INPUT,
-					"details": err.Error(),
-				},
-			}
-		case *errorhandler.InvalidDateOfBirthError:
-			return nil, &gqlerror.Error{
-				Message: "invalid date of birth",
-				Extensions: map[string]interface{}{
-					"code":    errorhandler.INVALID_INPUT,
-					"details": err.Error(),
-				},
-			}
-		case *errorhandler.InvalidLastSeenTimeError:
+		case *errorhandler.InvalidInputError:
 			return nil, &gqlerror.Error{
 				Message: "invalid last seen time",
 				Extensions: map[string]interface{}{
-					"code":    errorhandler.INVALID_INPUT,
-					"details": err.Error(),
+					"code": errorhandler.INVALID_INPUT,
 				},
 			}
-		case *errorhandler.TigerCreationError:
+		case *errorhandler.CustomError:
 			return nil, &gqlerror.Error{
-				Message: "failed to create tiger",
+				Message: err.Error(),
 				Extensions: map[string]interface{}{
-					"code":    errorhandler.INVALID_INPUT,
-					"details": err.Error(),
+					"code": errorhandler.INVALID_INPUT,
 				},
 			}
 		default:

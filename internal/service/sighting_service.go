@@ -50,7 +50,7 @@ func (s *sightingService) ListSightings(ctx context.Context, tigerID string, lim
 	if err != nil {
 		// Handle errors (e.g., database error)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, &errorhandler.TigerNotFound{Message: "Tiger not found"}
+			return nil, &errorhandler.NotFoundError{Message: "Tiger not found"}
 		} else {
 			logger.Logger(ctx).Error("Failed to list sightings for tiger:", err)
 			return nil, errorhandler.NewCustomError("Failed to list sightings", http.StatusInternalServerError)
@@ -64,14 +64,14 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 	tiger, err := s.tigerRepo.GetTigerByID(ctx, input.TigerID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, &errorhandler.TigerNotFound{Message: "Tiger not found"}
+			return nil, &errorhandler.NotFoundError{Message: "Tiger not found"}
 		}
 		logger.Logger(ctx).Error("Unexpected error getting tiger by ID: ", err)
 		return nil, errorhandler.NewCustomError("Failed to retrieve tiger by ID", http.StatusInternalServerError)
 	}
 
 	if !isValidLatitude(input.Coordinate.Latitude) || !isValidLongitude(input.Coordinate.Longitude) {
-		return nil, &errorhandler.InvalidCoordinatesError{
+		return nil, &errorhandler.InvalidInputError{
 			Message: "latitude must be between -90 and 90, longitude between -180 and 180",
 		}
 	}

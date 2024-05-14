@@ -1,9 +1,10 @@
-package service
+package service // Change to tigerservice
 
 import (
 	"context"
 	"fmt"
 	"math"
+	"net/http"
 	"strings"
 	"time"
 
@@ -11,38 +12,22 @@ import (
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/errorhandler"
-	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
 )
 
 type tigerService struct {
 	tigerRepo repository.TigerRepository
 }
 
+// NewTigerService creates a new instance of TigerService
 func NewTigerService(tigerRepo repository.TigerRepository) TigerService {
-	return &tigerService{
-		tigerRepo: tigerRepo,
-	}
+	return &tigerService{tigerRepo: tigerRepo}
 }
 
-// CreateTiger Function
+// CreateTiger creates a new tiger in the database
 func (s *tigerService) CreateTiger(ctx context.Context, input *model.TigerInput) (*model.Tiger, error) {
-	// Validations
-	if !isValidLatitude(input.LastSeenCoordinate.Latitude) || !isValidLongitude(input.LastSeenCoordinate.Longitude) {
-		return nil, &errorhandler.InvalidCoordinatesError{
-			Message: "latitude must be between -90 and 90, longitude between -180 and 180",
-		}
-	}
-
-	if input.DateOfBirth.After(time.Now()) {
-		return nil, &errorhandler.InvalidDateOfBirthError{
-			Message: "date of birth cannot be in the future",
-		}
-	}
-
-	if input.LastSeenTime.After(time.Now()) {
-		return nil, &errorhandler.InvalidLastSeenTimeError{
-			Message: "last seen time cannot be in the future",
-		}
+	// Input Validation
+	if err := validateTigerInput(input); err != nil {
+		return nil, err // Return the validation error directly
 	}
 
 	// Data Mapping
@@ -51,29 +36,44 @@ func (s *tigerService) CreateTiger(ctx context.Context, input *model.TigerInput)
 		Name:         input.Name,
 		DateOfBirth:  input.DateOfBirth,
 		LastSeenTime: input.LastSeenTime,
-		Coordinate:   (*model.Coordinate)(input.LastSeenCoordinate),
+		Coordinate:   (*model.Coordinate)(input.LastSeenCoordinate), // No need for casting anymore
 	}
 
 	// Database Interaction
-	if err := s.tigerRepo.Create(ctx, tiger); err != nil {
-		if strings.Contains(err.Error(), "unique constraint") {
-			return nil, &errorhandler.TigerCreationError{
-				Field:   "name",
-				Message: fmt.Sprintf("a tiger with the name %s already exists", input.Name),
-			}
+	err := s.tigerRepo.Create(ctx, tiger)
+	if err != nil {
+		if strings.Contains(err.Error(), "unique constraint") { // Check if it's a unique constraint error
+			return nil, errorhandler.NewCustomError(
+				fmt.Sprintf("a tiger with the name %s already exists", input.Name),
+				http.StatusConflict,
+			)
 		}
-		logger.Logger(ctx).Error("unexpected error creating tiger", err)
-		return nil, errorhandler.ErrInternalServer
+		return nil, errorhandler.NewInternalServerError("unexpected error creating tiger") // Wrap internal errorhandler
 	}
 
 	return tiger, nil
 }
 
-func (s *tigerService) ListTigers(ctx context.Context, limit int, offset int) ([]*model.Tiger, error) {
+// validateTigerInput validates the input fields for creating a tiger
+func validateTigerInput(input *model.TigerInput) error {
+	if !isValidLatitude(input.LastSeenCoordinate.Latitude) ||
+		!isValidLongitude(input.LastSeenCoordinate.Longitude) {
+		return errorhandler.NewInvalidInputError("Invalid coordinates")
+	}
+	if input.DateOfBirth.After(time.Now()) {
+		return errorhandler.NewInvalidInputError("Date of birth cannot be in the future")
+	}
+	if input.LastSeenTime.After(time.Now()) {
+		return errorhandler.NewInvalidInputError("Last seen time cannot be in the future")
+	}
+	return nil
+}
+
+// ListTigers returns a list of tigers with pagination
+func (s *tigerService) ListTigers(ctx context.Context, limit, offset int) ([]*model.Tiger, error) {
 	tigers, err := s.tigerRepo.ListTigers(ctx, limit, offset)
 	if err != nil {
-		logger.Logger(ctx).Error("unexpected error creating tiger", err)
-		return nil, fmt.Errorf("unexpected error listing tigers : %v", err.Error())
+		return nil, errorhandler.NewInternalServerError("unexpected error listing tigers")
 	}
 	return tigers, nil
 }

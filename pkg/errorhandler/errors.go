@@ -2,7 +2,6 @@ package errorhandler
 
 import (
 	"errors"
-	"fmt"
 )
 
 type ErrorCode string
@@ -29,45 +28,46 @@ func NewCustomError(message string, code int) *CustomError {
 	return &CustomError{Message: message, Code: code}
 }
 
-type InvalidCoordinatesError struct {
+// NotFoundError is used when a resource is not found.
+type NotFoundError struct {
 	Message string `json:"message"`
 }
 
-func (e *InvalidCoordinatesError) Error() string {
+func (e *NotFoundError) Error() string {
 	return e.Message
 }
 
-type InvalidDateOfBirthError struct {
+// NewNotFoundError creates a new NotFoundError.
+func NewNotFoundError(message string) *NotFoundError {
+	return &NotFoundError{Message: message}
+}
+
+// InvalidInputError is used for invalid input data.
+type InvalidInputError struct {
 	Message string `json:"message"`
 }
 
-func (e *InvalidDateOfBirthError) Error() string {
+func (e *InvalidInputError) Error() string {
 	return e.Message
 }
 
-type InvalidLastSeenTimeError struct {
+// NewInvalidInputError creates a new InvalidInputError.
+func NewInvalidInputError(message string) *InvalidInputError {
+	return &InvalidInputError{Message: message}
+}
+
+// InternalServerError represents a generic internal server error.
+type InternalServerError struct {
 	Message string `json:"message"`
 }
 
-func (e *InvalidLastSeenTimeError) Error() string {
+func (e *InternalServerError) Error() string {
 	return e.Message
 }
 
-type TigerCreationError struct {
-	Field   string `json:"field"`
-	Message string `json:"message"`
-}
-
-func (e *TigerCreationError) Error() string {
-	return fmt.Sprintf("tiger creation failed: %s: %s", e.Field, e.Message)
-}
-
-type TigerNotFound struct {
-	Message string `json:"message"`
-}
-
-func (e *TigerNotFound) Error() string {
-	return e.Message
+// NewInternalServerError creates a new InternalServerError.
+func NewInternalServerError(message string) *InternalServerError {
+	return &InternalServerError{Message: message}
 }
 
 type SightingTooCloseError struct {
