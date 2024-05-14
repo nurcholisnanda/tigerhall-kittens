@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 )
@@ -31,7 +30,6 @@ type TigerService interface {
 type SightingService interface {
 	CreateSighting(ctx context.Context, newSighting *model.SightingInput) (*model.Sighting, error)
 	ListSightings(ctx context.Context, tigerID string, limit int, offset int) ([]*model.Sighting, error)
-	GetResizedImage(ctx context.Context, inputImage *graphql.Upload) (string, error)
 }
 
 //go:generate mockgen -source=service.go -destination=mock/service.go -package=mock

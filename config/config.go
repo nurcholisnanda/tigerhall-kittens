@@ -10,6 +10,7 @@ import (
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/service"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/bcrypt"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/imagehandler"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/mailer"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/storage"
 )
@@ -41,6 +42,7 @@ func InitDependencies() (Dependencies, error) {
 	if err != nil {
 		return Dependencies{}, fmt.Errorf("failed to create S3 client: %w", err)
 	}
+	imgHandler := imagehandler.NewImageService(s3Client)
 	userRepo := repository.NewUserRepoImpl(gormDB)
 	tigerRepo := repository.NewTigerRepositoryImpl(gormDB)
 	sightingRepo := repository.NewSightingRepositoryImpl(gormDB)
@@ -49,7 +51,7 @@ func InitDependencies() (Dependencies, error) {
 	JWT := service.NewJWT(os.Getenv("JWT_SECRET"))
 	userSvc := service.NewUserService(userRepo, bcrypt.NewBcrypt(), JWT)
 	tigerSvc := service.NewTigerService(tigerRepo)
-	sightingSvc := service.NewSightingService(notificationSvc, sightingRepo, tigerRepo, s3Client)
+	sightingSvc := service.NewSightingService(notificationSvc, sightingRepo, tigerRepo, s3Client, imgHandler)
 
 	return Dependencies{
 		SightingRepo:        sightingRepo,

@@ -1,24 +1,18 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"image"
-	"image/jpeg"
-	"io"
-	"log"
 	"math"
 	"net/http"
 	"time"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
-	"github.com/nfnt/resize"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/errorhandler"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/imagehandler"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/storage"
 	"gorm.io/gorm"
@@ -29,6 +23,7 @@ type sightingService struct {
 	sightingRepo repository.SightingRepository
 	tigerRepo    repository.TigerRepository
 	s3Client     storage.S3Interface
+	imgHandler   imagehandler.ImageHandler
 }
 
 func NewSightingService(
@@ -36,12 +31,14 @@ func NewSightingService(
 	sightingRepo repository.SightingRepository,
 	tigerRepo repository.TigerRepository,
 	s3Client storage.S3Interface,
+	imgHandler imagehandler.ImageHandler,
 ) SightingService {
 	return &sightingService{
 		notifSvc:     notifSvc,
 		sightingRepo: sightingRepo,
 		tigerRepo:    tigerRepo,
 		s3Client:     s3Client,
+		imgHandler:   imgHandler,
 	}
 }
 
@@ -64,16 +61,14 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 	tiger, err := s.tigerRepo.GetTigerByID(ctx, input.TigerID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, &errorhandler.NotFoundError{Message: "Tiger not found"}
+			return nil, errorhandler.NewNotFoundError("Tiger not found")
 		}
 		logger.Logger(ctx).Error("Unexpected error getting tiger by ID: ", err)
 		return nil, errorhandler.NewCustomError("Failed to retrieve tiger by ID", http.StatusInternalServerError)
 	}
 
 	if !isValidLatitude(input.Coordinate.Latitude) || !isValidLongitude(input.Coordinate.Longitude) {
-		return nil, &errorhandler.InvalidInputError{
-			Message: "latitude must be between -90 and 90, longitude between -180 and 180",
-		}
+		return nil, errorhandler.NewInvalidInputError("latitude must be between -90 and 90, longitude between -180 and 180")
 	}
 
 	sighting, err := s.sightingRepo.GetLatestSightingByTigerID(ctx, input.TigerID)
@@ -98,7 +93,7 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 		}
 	}
 
-	imagePath, err := s.GetResizedImage(ctx, input.Image)
+	imagePath, err := s.imgHandler.ResizeAndUpload(ctx, input.Image)
 	if err != nil {
 		logger.Logger(ctx).Error(ctx, "Fail when resizing image", "error", err)
 	}
@@ -128,40 +123,6 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 	s.notifSvc.SendNotification(notification)
 
 	return newSighting, nil
-}
-
-func (s *sightingService) GetResizedImage(ctx context.Context, inputImage *graphql.Upload) (string, error) {
-	imageData, readErr := io.ReadAll(inputImage.File)
-	if readErr != nil {
-		logger.Logger(ctx).Error(ctx, "readErr", readErr)
-
-		fmt.Printf("error from file %v", readErr)
-	}
-
-	img, format, err := image.Decode(bytes.NewReader(imageData))
-	if err != nil {
-		log.Printf("Error decoding image")
-
-		return "", fmt.Errorf("error decoding image: %v got format %v", err, format)
-	}
-	resizedImage := resize.Resize(250, 200, img, resize.Lanczos3)
-
-	// Encode resized image to base64
-	buf := new(bytes.Buffer)
-	err = jpeg.Encode(buf, resizedImage, nil)
-	if err != nil {
-		logger.Logger(ctx).Error(ctx, "Error encoding image", "error", err)
-		return "", fmt.Errorf("error encoding image: %v", err)
-	}
-
-	// Upload to R2
-	objectURL, err := s.s3Client.PutObject(format, buf)
-	if err != nil {
-		logger.Logger(ctx).Error("Error uploading image to R2", "error", err)
-		return "", fmt.Errorf("error uploading image to R2: %w", err)
-	}
-	logger.Logger(ctx).Info("Image uploaded to R2. ", "objectURL: ", objectURL)
-	return objectURL, nil
 }
 
 func calculateDistance(coord1, coord2 *model.Coordinate) float64 {

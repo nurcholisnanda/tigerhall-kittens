@@ -58,7 +58,7 @@ func (s *tigerService) CreateTiger(ctx context.Context, input *model.TigerInput)
 func validateTigerInput(input *model.TigerInput) error {
 	if !isValidLatitude(input.LastSeenCoordinate.Latitude) ||
 		!isValidLongitude(input.LastSeenCoordinate.Longitude) {
-		return errorhandler.NewInvalidInputError("Invalid coordinates")
+		return errorhandler.NewInvalidInputError("latitude must be between -90 and 90, longitude between -180 and 180")
 	}
 	if input.DateOfBirth.After(time.Now()) {
 		return errorhandler.NewInvalidInputError("Date of birth cannot be in the future")
