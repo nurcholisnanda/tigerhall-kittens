@@ -4,12 +4,10 @@ import (
 	"bytes"
 	"context"
 	"embed"
-	"fmt"
 	"html/template"
 	"log"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/go-mail/mail/v2"
@@ -33,9 +31,9 @@ func NewMailService() *mailService {
 		log.Fatal(err)
 	}
 	// Initialize a new mail.Dialer instance with the given SMTP server settings. We
-	// also configure this to use a 5-second timeout whenever we send an email.
+	// also configure this to use a 10-second timeout whenever we send an email.
 	dialer := mail.NewDialer(os.Getenv("MAIL_HOST"), port, os.Getenv("MAIL_USER"), os.Getenv("MAIL_PASSWORD"))
-	dialer.Timeout = 5 * time.Second
+	dialer.Timeout = 10 * time.Second
 	// Return a Mailer instance containing the dialer and sender information.
 	return &mailService{
 		dialer: dialer,
@@ -44,10 +42,10 @@ func NewMailService() *mailService {
 	}
 }
 
-// Define a Send() method on the Mailer type. This takes the recipient email address
-// as the first parameter, the name of the file containing the templates, and any
+// Send function takes the recipient email addresses,
+// the name of the file containing the templates, and any
 // dynamic data for the templates as an interface{} parameter.
-func (m *mailService) Send(ctx context.Context, recipient, templateFile string, data interface{}, done chan struct{}) error {
+func (m *mailService) Send(ctx context.Context, recipient, templateFile string, data interface{}) error {
 	// Use the ParseFS() method to parse the required template file from the embedded
 	// file system.
 	tmpl, err := template.New("email").ParseFS(templateFS, "templates/"+templateFile)
@@ -74,11 +72,8 @@ func (m *mailService) Send(ctx context.Context, recipient, templateFile string, 
 	if err != nil {
 		return err
 	}
-	// Use the mail.NewMessage() function to initialize a new mail.Message instance.
-	// Then we use the SetHeader() method to set the email recipient, sender and subject
-	// headers, the SetBody() method to set the plain-text body, and the AddAlternative()
-	// method to set the HTML body. It's important to note that AddAlternative() should
-	// always be called *after* SetBody().
+
+	//setup message format
 	msg := mail.NewMessage()
 	msg.SetHeader("To", recipient)
 	msg.SetHeader("From", m.sender)
@@ -90,19 +85,12 @@ func (m *mailService) Send(ctx context.Context, recipient, templateFile string, 
 	// opens a connection to the SMTP server, sends the message, then closes the
 	// connection. If there is a timeout, it will return a "dial tcp: i/o timeout"
 	// error.
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		defer close(done)
-		err = m.mailer.DialAndSend(m.dialer, msg)
-		if err != nil {
-			fmt.Println("error sending email", err.Error())
-			return
-		}
-		logger.Logger(ctx).Info("Sent email notification to user:", recipient)
-	}()
-	wg.Wait()
+	err = m.mailer.DialAndSend(m.dialer, msg)
+	if err != nil {
+		logger.Logger(ctx).Error("error sending email : ", err.Error())
+		return err
+	}
+	logger.Logger(ctx).Info("Sent email notification to user:", recipient)
 
 	return nil
 }

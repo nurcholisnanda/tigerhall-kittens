@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
@@ -40,6 +41,12 @@ func generateSalt() (string, error) {
 func (s *userService) Register(ctx context.Context, input *model.NewUser) (interface{}, error) {
 	if err := input.Validate(); err != nil { // Call the Validate method of your input struct
 		return nil, errorhandler.NewInvalidInputError(err.Error())
+	}
+
+	// Check if user already exists
+	existingUser, _ := s.userRepo.GetUserByEmail(ctx, input.Email)
+	if existingUser != nil {
+		return nil, errorhandler.NewCustomError("Email already exists", http.StatusConflict)
 	}
 
 	// Generate a Random Salt

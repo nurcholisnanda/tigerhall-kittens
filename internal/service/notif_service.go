@@ -4,7 +4,6 @@ package service
 import (
 	"context"
 	"net/http"
-	"sync"
 
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
@@ -55,19 +54,11 @@ func (s *notificationService) StartNotificationConsumer(ctx context.Context) {
 				}
 
 				// Send email notifications
-				var wg sync.WaitGroup
 				for _, sighter := range previousSighters {
-					wg.Add(1)
 					go func(sighter *model.User) {
-						defer wg.Done()
-						done := make(chan struct{})
 						notification.Sighter = sighter.Name
-						if err := s.mailSvc.Send(ctx, sighter.Email, "notif_mail.tmpl", notification, done); err != nil {
-							logger.Logger(ctx).Error("Failed to send email notification:", err)
-							close(done)
-						}
+						s.mailSvc.Send(ctx, sighter.Email, "notif_mail.tmpl", notification)
 					}(sighter)
-					wg.Wait()
 				}
 			}(notification)
 		}

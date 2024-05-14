@@ -24,8 +24,8 @@ func (u *NewUser) Validate() error {
 	if u.Password == "" {
 		return errors.New("password is required")
 	}
-	if len(u.Password) < 8 {
-		return errors.New("password must be at least 8 characters long")
+	if len(u.Password) < 6 {
+		return errors.New("password must be at least 6 characters long")
 	}
 	if u.Email == "" {
 		return errors.New("email is required")

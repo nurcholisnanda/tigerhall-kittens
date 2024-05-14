@@ -61,7 +61,7 @@ func Test_userService_Register(t *testing.T) {
 	ctx := context.Background()
 	input := &model.NewUser{
 		Name:     "name",
-		Email:    "email",
+		Email:    "email@mail.co.id",
 		Password: "password",
 	}
 	type fields struct {
@@ -81,6 +81,18 @@ func Test_userService_Register(t *testing.T) {
 		mocks   []*gomock.Call
 	}{
 		{
+			name: "should return error if fail to validate input",
+			fields: fields{
+				userRepo: userRepo,
+				bcrypt:   mockBcrypt,
+			},
+			args: args{
+				ctx:   ctx,
+				input: &model.NewUser{},
+			},
+			wantErr: true,
+		},
+		{
 			name: "should return error if fail to hash password",
 			fields: fields{
 				userRepo: userRepo,
@@ -92,6 +104,7 @@ func Test_userService_Register(t *testing.T) {
 			},
 			wantErr: true,
 			mocks: []*gomock.Call{
+				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(nil, gorm.ErrRecordNotFound),
 				mockBcrypt.EXPECT().HashPassword(gomock.Any()).Return(nil, errors.New("any error")),
 			},
 		},
@@ -107,24 +120,7 @@ func Test_userService_Register(t *testing.T) {
 			},
 			wantErr: true,
 			mocks: []*gomock.Call{
-				mockBcrypt.EXPECT().HashPassword(gomock.Any()).Return(hashedPassword, nil),
 				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(&model.User{ID: "1"}, nil),
-			},
-		},
-		{
-			name: "should return error if repository return error other than record not found",
-			fields: fields{
-				userRepo: userRepo,
-				bcrypt:   mockBcrypt,
-			},
-			args: args{
-				ctx:   ctx,
-				input: input,
-			},
-			wantErr: true,
-			mocks: []*gomock.Call{
-				mockBcrypt.EXPECT().HashPassword(gomock.Any()).Return(hashedPassword, nil),
-				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(nil, errors.New("any error")),
 			},
 		},
 		{
@@ -139,8 +135,8 @@ func Test_userService_Register(t *testing.T) {
 			},
 			wantErr: true,
 			mocks: []*gomock.Call{
-				mockBcrypt.EXPECT().HashPassword(gomock.Any()).Return(hashedPassword, nil),
 				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(nil, gorm.ErrRecordNotFound),
+				mockBcrypt.EXPECT().HashPassword(gomock.Any()).Return(hashedPassword, nil),
 				userRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(errors.New("any error")),
 			},
 		},
@@ -156,8 +152,8 @@ func Test_userService_Register(t *testing.T) {
 			},
 			wantErr: false,
 			mocks: []*gomock.Call{
-				mockBcrypt.EXPECT().HashPassword(gomock.Any()).Return(hashedPassword, nil),
 				userRepo.EXPECT().GetUserByEmail(ctx, gomock.Any()).Return(nil, gorm.ErrRecordNotFound),
+				mockBcrypt.EXPECT().HashPassword(gomock.Any()).Return(hashedPassword, nil),
 				userRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(nil),
 			},
 		},
