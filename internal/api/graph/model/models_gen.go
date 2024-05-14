@@ -51,7 +51,6 @@ type SightingInput struct {
 	Image      *graphql.Upload  `json:"image,omitempty"`
 }
 
-
 type TigerInput struct {
 	Name               string           `json:"name"`
 	DateOfBirth        time.Time        `json:"dateOfBirth"`

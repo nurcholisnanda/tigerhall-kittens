@@ -18,7 +18,7 @@ import (
 	"github.com/nfnt/resize"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
-	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/errorhandler"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/storage"
 	"gorm.io/gorm"
@@ -50,10 +50,10 @@ func (s *sightingService) ListSightings(ctx context.Context, tigerID string, lim
 	if err != nil {
 		// Handle errors (e.g., database error)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, &helper.TigerNotFound{Message: "Tiger not found"}
+			return nil, &errorhandler.TigerNotFound{Message: "Tiger not found"}
 		} else {
 			logger.Logger(ctx).Error("Failed to list sightings for tiger:", err)
-			return nil, helper.NewCustomError("Failed to list sightings", http.StatusInternalServerError)
+			return nil, errorhandler.NewCustomError("Failed to list sightings", http.StatusInternalServerError)
 		}
 	}
 	return sightings, nil
@@ -64,14 +64,14 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 	tiger, err := s.tigerRepo.GetTigerByID(ctx, input.TigerID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, &helper.TigerNotFound{Message: "Tiger not found"}
+			return nil, &errorhandler.TigerNotFound{Message: "Tiger not found"}
 		}
 		logger.Logger(ctx).Error("Unexpected error getting tiger by ID: ", err)
-		return nil, helper.NewCustomError("Failed to retrieve tiger by ID", http.StatusInternalServerError)
+		return nil, errorhandler.NewCustomError("Failed to retrieve tiger by ID", http.StatusInternalServerError)
 	}
 
 	if !isValidLatitude(input.Coordinate.Latitude) || !isValidLongitude(input.Coordinate.Longitude) {
-		return nil, &helper.InvalidCoordinatesError{
+		return nil, &errorhandler.InvalidCoordinatesError{
 			Message: "latitude must be between -90 and 90, longitude between -180 and 180",
 		}
 	}
@@ -80,7 +80,7 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {
 			logger.Logger(ctx).Error("Unexpected error getting tiger by ID: ", err)
-			return nil, helper.NewCustomError("Failed to retrieve tiger by ID", http.StatusInternalServerError)
+			return nil, errorhandler.NewCustomError("Failed to retrieve tiger by ID", http.StatusInternalServerError)
 		}
 	}
 
@@ -93,7 +93,7 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 
 	distance := calculateDistance((*model.Coordinate)(input.Coordinate), Coordinate)
 	if distance < 5000 {
-		return nil, &helper.SightingTooCloseError{
+		return nil, &errorhandler.SightingTooCloseError{
 			Message: fmt.Sprintf("new sighting is too close to the last known location (%.2f meters)", distance),
 		}
 	}
@@ -113,7 +113,7 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 
 	if err := s.sightingRepo.CreateSighting(ctx, newSighting); err != nil {
 		logger.Logger(ctx).Error("Unexpected error creating sighting: ", err)
-		return nil, helper.NewCustomError("Failed to create sighting", http.StatusInternalServerError)
+		return nil, errorhandler.NewCustomError("Failed to create sighting", http.StatusInternalServerError)
 	}
 
 	// Create a notification message\
@@ -182,7 +182,7 @@ func calculateDistance(coord1, coord2 *model.Coordinate) float64 {
 	return distance
 }
 
-// Helper function to convert degrees to radians
+// errorhandler function to convert degrees to radians
 func degreesToRadians(degrees float64) float64 {
 	return degrees * math.Pi / 180
 }

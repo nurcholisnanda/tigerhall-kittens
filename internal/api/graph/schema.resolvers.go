@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
-	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/errorhandler"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
 	"github.com/sirupsen/logrus"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -31,27 +31,27 @@ func (r *createOpsResolver) CreateSighting(ctx context.Context, obj *model.Creat
 	if err != nil {
 		// Error Handling in the Resolver
 		switch err.(type) {
-		case *helper.InvalidCoordinatesError:
+		case *errorhandler.InvalidCoordinatesError:
 			return nil, &gqlerror.Error{
 				Message: "invalid coordinates",
 				Extensions: map[string]interface{}{
-					"code":    helper.INVALID_INPUT,
+					"code":    errorhandler.INVALID_INPUT,
 					"details": err.Error(),
 				},
 			}
-		case *helper.TigerNotFound:
+		case *errorhandler.TigerNotFound:
 			return nil, &gqlerror.Error{
 				Message: "tiger not found",
 				Extensions: map[string]interface{}{
-					"code":    helper.NOT_FOUND,
+					"code":    errorhandler.NOT_FOUND,
 					"details": err.Error(),
 				},
 			}
-		case *helper.SightingTooCloseError:
+		case *errorhandler.SightingTooCloseError:
 			return nil, &gqlerror.Error{
 				Message: "slighting too close",
 				Extensions: map[string]interface{}{
-					"code":    helper.CONFLICT,
+					"code":    errorhandler.CONFLICT,
 					"details": err.Error(),
 				},
 			}
@@ -70,35 +70,35 @@ func (r *createOpsResolver) CreateTiger(ctx context.Context, obj *model.CreateOp
 	tiger, err := r.TigerSvc.CreateTiger(ctx, &input)
 	if err != nil {
 		switch err.(type) {
-		case *helper.InvalidCoordinatesError:
+		case *errorhandler.InvalidCoordinatesError:
 			return nil, &gqlerror.Error{
 				Message: "invalid coordinates",
 				Extensions: map[string]interface{}{
-					"code":    helper.INVALID_INPUT,
+					"code":    errorhandler.INVALID_INPUT,
 					"details": err.Error(),
 				},
 			}
-		case *helper.InvalidDateOfBirthError:
+		case *errorhandler.InvalidDateOfBirthError:
 			return nil, &gqlerror.Error{
 				Message: "invalid date of birth",
 				Extensions: map[string]interface{}{
-					"code":    helper.INVALID_INPUT,
+					"code":    errorhandler.INVALID_INPUT,
 					"details": err.Error(),
 				},
 			}
-		case *helper.InvalidLastSeenTimeError:
+		case *errorhandler.InvalidLastSeenTimeError:
 			return nil, &gqlerror.Error{
 				Message: "invalid last seen time",
 				Extensions: map[string]interface{}{
-					"code":    helper.INVALID_INPUT,
+					"code":    errorhandler.INVALID_INPUT,
 					"details": err.Error(),
 				},
 			}
-		case *helper.TigerCreationError:
+		case *errorhandler.TigerCreationError:
 			return nil, &gqlerror.Error{
 				Message: "failed to create tiger",
 				Extensions: map[string]interface{}{
-					"code":    helper.INVALID_INPUT,
+					"code":    errorhandler.INVALID_INPUT,
 					"details": err.Error(),
 				},
 			}

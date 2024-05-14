@@ -42,4 +42,7 @@ type MailerInterface interface {
 //go:generate mockgen -source=service.go -destination=mock/service.go -package=mock
 type NotifService interface {
 	SendNotification(notif model.Notification)
+	StartNotificationConsumer(ctx context.Context)
+	FetchPreviousSighters(ctx context.Context, tigerID string) ([]*model.User, error)
+	CloseNotificationChannel()
 }

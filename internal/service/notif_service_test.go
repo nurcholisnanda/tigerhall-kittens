@@ -28,7 +28,7 @@ func TestNewNotificationService(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *notificationService
+		want NotifService
 	}{
 		{
 			name: "success",

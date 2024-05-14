@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
-	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/errorhandler"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
 )
 
@@ -28,19 +28,19 @@ func NewTigerService(tigerRepo repository.TigerRepository) TigerService {
 func (s *tigerService) CreateTiger(ctx context.Context, input *model.TigerInput) (*model.Tiger, error) {
 	// Validations
 	if !isValidLatitude(input.LastSeenCoordinate.Latitude) || !isValidLongitude(input.LastSeenCoordinate.Longitude) {
-		return nil, &helper.InvalidCoordinatesError{
+		return nil, &errorhandler.InvalidCoordinatesError{
 			Message: "latitude must be between -90 and 90, longitude between -180 and 180",
 		}
 	}
 
 	if input.DateOfBirth.After(time.Now()) {
-		return nil, &helper.InvalidDateOfBirthError{
+		return nil, &errorhandler.InvalidDateOfBirthError{
 			Message: "date of birth cannot be in the future",
 		}
 	}
 
 	if input.LastSeenTime.After(time.Now()) {
-		return nil, &helper.InvalidLastSeenTimeError{
+		return nil, &errorhandler.InvalidLastSeenTimeError{
 			Message: "last seen time cannot be in the future",
 		}
 	}
@@ -57,13 +57,13 @@ func (s *tigerService) CreateTiger(ctx context.Context, input *model.TigerInput)
 	// Database Interaction
 	if err := s.tigerRepo.Create(ctx, tiger); err != nil {
 		if strings.Contains(err.Error(), "unique constraint") {
-			return nil, &helper.TigerCreationError{
+			return nil, &errorhandler.TigerCreationError{
 				Field:   "name",
 				Message: fmt.Sprintf("a tiger with the name %s already exists", input.Name),
 			}
 		}
 		logger.Logger(ctx).Error("unexpected error creating tiger", err)
-		return nil, helper.ErrInternalServer
+		return nil, errorhandler.ErrInternalServer
 	}
 
 	return tiger, nil
@@ -78,7 +78,7 @@ func (s *tigerService) ListTigers(ctx context.Context, limit int, offset int) ([
 	return tigers, nil
 }
 
-// Helper Validation Functions
+// errorhandler Validation Functions
 func isValidLatitude(latitude float64) bool {
 	return math.Abs(latitude) <= 90
 }

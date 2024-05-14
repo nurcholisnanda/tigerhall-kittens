@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
-	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/contexthandler"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
 	"gorm.io/gorm"
 )
@@ -28,7 +28,7 @@ func (r *TigerRepositoryImpl) GetTigerByID(ctx context.Context, id string) (*mod
 }
 
 func (r *TigerRepositoryImpl) Create(ctx context.Context, tiger *model.Tiger) error {
-	userId, err := helper.GetUserID(ctx)
+	userId, err := contexthandler.GetUserID(ctx)
 	if err != nil {
 		logger.Logger(ctx).Error("failed to get user id")
 	}

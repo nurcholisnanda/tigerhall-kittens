@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
-	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/contexthandler"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
 	"gorm.io/gorm"
 )
@@ -27,7 +27,7 @@ func (r *SightingRepositoryImpl) GetSightingsByTigerID(ctx context.Context, tige
 }
 
 func (r *SightingRepositoryImpl) CreateSighting(ctx context.Context, sighting *model.Sighting) error {
-	userId, err := helper.GetUserID(ctx)
+	userId, err := contexthandler.GetUserID(ctx)
 	if err != nil {
 		logger.Logger(ctx).Error("failed to get user id")
 	}

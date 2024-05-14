@@ -8,7 +8,7 @@ import (
 
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/repository"
-	"github.com/nurcholisnanda/tigerhall-kittens/pkg/helper"
+	"github.com/nurcholisnanda/tigerhall-kittens/pkg/errorhandler"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/logger"
 )
 
@@ -27,7 +27,7 @@ func NewNotificationService(
 	sr repository.SightingRepository,
 	ur repository.UserRepository,
 	mailSvc MailerInterface,
-) *notificationService {
+) NotifService {
 	return &notificationService{
 		sightingRepo: sr,
 		userRepo:     ur,
@@ -79,7 +79,7 @@ func (s *notificationService) FetchPreviousSighters(ctx context.Context, tigerID
 	userIDs, err := s.sightingRepo.ListUserCreatedSightingByTigerID(ctx, tigerID)
 	if err != nil {
 		logger.Logger(ctx).Error("Failed to fetch sightings by tiger ID: ", err)
-		return nil, helper.NewCustomError("Failed to fetch previous sighters", http.StatusInternalServerError)
+		return nil, errorhandler.NewCustomError("Failed to fetch previous sighters", http.StatusInternalServerError)
 	}
 
 	var previousSighters []*model.User

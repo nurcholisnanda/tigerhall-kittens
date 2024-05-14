@@ -321,6 +321,33 @@ func (m *MockNotifService) EXPECT() *MockNotifServiceMockRecorder {
 	return m.recorder
 }
 
+// CloseNotificationChannel mocks base method.
+func (m *MockNotifService) CloseNotificationChannel() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CloseNotificationChannel")
+}
+
+// CloseNotificationChannel indicates an expected call of CloseNotificationChannel.
+func (mr *MockNotifServiceMockRecorder) CloseNotificationChannel() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseNotificationChannel", reflect.TypeOf((*MockNotifService)(nil).CloseNotificationChannel))
+}
+
+// FetchPreviousSighters mocks base method.
+func (m *MockNotifService) FetchPreviousSighters(ctx context.Context, tigerID string) ([]*model.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FetchPreviousSighters", ctx, tigerID)
+	ret0, _ := ret[0].([]*model.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchPreviousSighters indicates an expected call of FetchPreviousSighters.
+func (mr *MockNotifServiceMockRecorder) FetchPreviousSighters(ctx, tigerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchPreviousSighters", reflect.TypeOf((*MockNotifService)(nil).FetchPreviousSighters), ctx, tigerID)
+}
+
 // SendNotification mocks base method.
 func (m *MockNotifService) SendNotification(notif model.Notification) {
 	m.ctrl.T.Helper()
@@ -331,4 +358,16 @@ func (m *MockNotifService) SendNotification(notif model.Notification) {
 func (mr *MockNotifServiceMockRecorder) SendNotification(notif any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendNotification", reflect.TypeOf((*MockNotifService)(nil).SendNotification), notif)
+}
+
+// StartNotificationConsumer mocks base method.
+func (m *MockNotifService) StartNotificationConsumer(ctx context.Context) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "StartNotificationConsumer", ctx)
+}
+
+// StartNotificationConsumer indicates an expected call of StartNotificationConsumer.
+func (mr *MockNotifServiceMockRecorder) StartNotificationConsumer(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartNotificationConsumer", reflect.TypeOf((*MockNotifService)(nil).StartNotificationConsumer), ctx)
 }
