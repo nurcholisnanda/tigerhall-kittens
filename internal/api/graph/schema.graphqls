@@ -89,7 +89,7 @@ type CreateOps {
 
 type Query {
   user(id: ID!): User! @goField(forceResolver: true)
-  list: ListOps! @goField
+  list: ListOps! @goField(forceResolver: true)
 }
 
 type Mutation {

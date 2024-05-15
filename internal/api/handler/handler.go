@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/directive"
+	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/generated"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/service"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/contexthandler"
 	"github.com/nurcholisnanda/tigerhall-kittens/pkg/errorhandler"
-	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Defining the Graphql handler
@@ -20,14 +20,14 @@ func GraphqlHandler(
 	tigerSvc service.TigerService,
 	sightingSvc service.SightingService,
 ) gin.HandlerFunc {
-	c := graph.Config{Resolvers: &graph.Resolver{
+	c := generated.Config{Resolvers: &graph.Resolver{
 		UserSvc:     userSvc,
 		TigerSvc:    tigerSvc,
 		SightingSvc: sightingSvc,
 	}}
 	c.Directives.Auth = directive.Auth
 
-	h := handler.NewDefaultServer(graph.NewExecutableSchema(c))
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(c))
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
@@ -39,8 +39,8 @@ func GraphqlHandler(
 		// Centralized Error Handling
 		for _, ginErr := range c.Errors {
 			switch err := ginErr.Err.(type) {
-			case *gqlerror.Error:
-				errorhandler.HandleGraphQLErrors(c, []*gqlerror.Error{err})
+			case *errorhandler.GraphQLError:
+				errorhandler.HandleGraphQLErrors(c, []*errorhandler.GraphQLError{err})
 			default:
 				c.JSON(http.StatusInternalServerError, errorhandler.ErrInternalServer)
 			}

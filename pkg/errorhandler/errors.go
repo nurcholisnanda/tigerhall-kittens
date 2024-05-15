@@ -7,10 +7,11 @@ import (
 type ErrorCode string
 
 var (
-	ErrInternalServer           = errors.New("internal server error")
-	INVALID_INPUT     ErrorCode = "INVALID_INPUT"
-	NOT_FOUND         ErrorCode = "NOT_FOUND"
-	CONFLICT          ErrorCode = "CONFLICT"
+	ErrInternalServer               = errors.New("internal server error")
+	INVALID_INPUT         ErrorCode = "INVALID_INPUT"
+	NOT_FOUND             ErrorCode = "NOT_FOUND"
+	CONFLICT              ErrorCode = "CONFLICT"
+	INTERNAL_SERVER_ERROR ErrorCode = "INTERNAL_SERVER_ERROR"
 )
 
 // Custom Errors
