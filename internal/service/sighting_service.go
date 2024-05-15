@@ -43,7 +43,7 @@ func NewSightingService(
 }
 
 func (s *sightingService) ListSightings(ctx context.Context, tigerID string, limit int, offset int) ([]*model.Sighting, error) {
-	sightings, err := s.sightingRepo.GetSightingsByTigerID(ctx, tigerID, limit, offset)
+	sightings, err := s.sightingRepo.GetSightersByTigerID(ctx, tigerID, limit, offset)
 	if err != nil {
 		// Handle errors (e.g., database error)
 		if errors.Is(err, gorm.ErrRecordNotFound) {

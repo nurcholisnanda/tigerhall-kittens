@@ -17,7 +17,7 @@ func NewSightingRepositoryImpl(db *gorm.DB) SightingRepository {
 	return &SightingRepositoryImpl{db: db}
 }
 
-func (r *SightingRepositoryImpl) GetSightingsByTigerID(ctx context.Context, tigerID string, limit int, offset int) ([]*model.Sighting, error) {
+func (r *SightingRepositoryImpl) GetSightersByTigerID(ctx context.Context, tigerID string, limit int, offset int) ([]*model.Sighting, error) {
 	var sightings []*model.Sighting
 	if err := r.db.WithContext(ctx).Where("tiger_id = ?", tigerID).Order("last_seen_time desc").
 		Offset(offset).Limit(limit).Find(&sightings).Error; err != nil {

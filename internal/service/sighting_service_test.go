@@ -391,7 +391,7 @@ func Test_sightingService_ListSightings(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 			mocks: []*gomock.Call{
-				sightingRepo.EXPECT().GetSightingsByTigerID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				sightingRepo.EXPECT().GetSightersByTigerID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, gorm.ErrRecordNotFound),
 			},
 		},
@@ -410,7 +410,7 @@ func Test_sightingService_ListSightings(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 			mocks: []*gomock.Call{
-				sightingRepo.EXPECT().GetSightingsByTigerID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				sightingRepo.EXPECT().GetSightersByTigerID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(nil, errors.New("any error")),
 			},
 		},
@@ -429,7 +429,7 @@ func Test_sightingService_ListSightings(t *testing.T) {
 			want:    sightings,
 			wantErr: false,
 			mocks: []*gomock.Call{
-				sightingRepo.EXPECT().GetSightingsByTigerID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				sightingRepo.EXPECT().GetSightersByTigerID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(sightings, nil),
 			},
 		},

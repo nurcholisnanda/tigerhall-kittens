@@ -4,6 +4,7 @@ go 1.21.4
 
 require (
 	github.com/99designs/gqlgen v0.17.46
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/aws/aws-sdk-go v1.53.1
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-mail/mail/v2 v2.3.0
