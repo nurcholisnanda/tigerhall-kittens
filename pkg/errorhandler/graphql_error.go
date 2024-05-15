@@ -1,18 +1,12 @@
 package errorhandler
 
-type GraphQLError struct {
-	Message    string                 `json:"message"`
-	Extensions map[string]interface{} `json:"extensions,omitempty"`
-}
-
-// Error method to satisfy the error interface
-func (e *GraphQLError) Error() string {
-	return e.Message
-}
+import (
+	"github.com/vektah/gqlparser/v2/gqlerror"
+)
 
 // NewGraphQLError creates a new GraphQLError with the given message and extensions
-func NewGraphQLError(message string, extensions map[string]interface{}) *GraphQLError {
-	return &GraphQLError{Message: message, Extensions: extensions}
+func NewGraphQLError(message string, extensions map[string]interface{}) *gqlerror.Error {
+	return &gqlerror.Error{Message: message, Extensions: extensions}
 }
 
 func GetErrorCode(err error) ErrorCode {
