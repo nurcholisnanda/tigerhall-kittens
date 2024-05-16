@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"reflect"
 	"regexp"
 	"testing"
 	"time"
@@ -13,123 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
-
-func TestNewTigerRepositoryImpl(t *testing.T) {
-	type args struct {
-		db *gorm.DB
-	}
-	tests := []struct {
-		name string
-		args args
-		want TigerRepository
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewTigerRepositoryImpl(tt.args.db); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewTigerRepositoryImpl() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_tigerRepositoryImpl_GetTigerByID(t *testing.T) {
-	type fields struct {
-		db *gorm.DB
-	}
-	type args struct {
-		ctx context.Context
-		id  string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *model.Tiger
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &tigerRepositoryImpl{
-				db: tt.fields.db,
-			}
-			got, err := r.GetTigerByID(tt.args.ctx, tt.args.id)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("tigerRepositoryImpl.GetTigerByID() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("tigerRepositoryImpl.GetTigerByID() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_tigerRepositoryImpl_Create(t *testing.T) {
-	type fields struct {
-		db *gorm.DB
-	}
-	type args struct {
-		ctx   context.Context
-		tiger *model.Tiger
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &tigerRepositoryImpl{
-				db: tt.fields.db,
-			}
-			if err := r.Create(tt.args.ctx, tt.args.tiger); (err != nil) != tt.wantErr {
-				t.Errorf("tigerRepositoryImpl.Create() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func Test_tigerRepositoryImpl_ListTigers(t *testing.T) {
-	type fields struct {
-		db *gorm.DB
-	}
-	type args struct {
-		ctx    context.Context
-		limit  int
-		offset int
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    []*model.Tiger
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &tigerRepositoryImpl{
-				db: tt.fields.db,
-			}
-			got, err := r.ListTigers(tt.args.ctx, tt.args.limit, tt.args.offset)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("tigerRepositoryImpl.ListTigers() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("tigerRepositoryImpl.ListTigers() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestTigerRepositoryImpl_Create(t *testing.T) {
 	ctx := context.Background()

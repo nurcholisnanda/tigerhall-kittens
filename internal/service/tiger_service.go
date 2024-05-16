@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"net/http"
 	"strings"
 	"time"
 
@@ -45,7 +44,7 @@ func (s *tigerService) CreateTiger(ctx context.Context, input *model.TigerInput)
 		if strings.Contains(err.Error(), "unique constraint") { // Check if it's a unique constraint error
 			return nil, errorhandler.NewCustomError(
 				fmt.Sprintf("a tiger with the name %s already exists", input.Name),
-				http.StatusConflict,
+				errorhandler.CONFLICT,
 			)
 		}
 		return nil, errorhandler.NewInternalServerError("unexpected error creating tiger") // Wrap internal errorhandler

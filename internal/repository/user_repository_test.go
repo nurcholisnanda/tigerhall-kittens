@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"reflect"
 	"regexp"
 	"testing"
 
@@ -12,122 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
-
-func TestNewUserRepoImpl(t *testing.T) {
-	type args struct {
-		db *gorm.DB
-	}
-	tests := []struct {
-		name string
-		args args
-		want UserRepository
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewUserRepoImpl(tt.args.db); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewUserRepoImpl() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_userRepoImpl_CreateUser(t *testing.T) {
-	type fields struct {
-		db *gorm.DB
-	}
-	type args struct {
-		ctx  context.Context
-		user *model.User
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &userRepoImpl{
-				db: tt.fields.db,
-			}
-			if err := r.CreateUser(tt.args.ctx, tt.args.user); (err != nil) != tt.wantErr {
-				t.Errorf("userRepoImpl.CreateUser() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func Test_userRepoImpl_GetUserByID(t *testing.T) {
-	type fields struct {
-		db *gorm.DB
-	}
-	type args struct {
-		ctx context.Context
-		id  string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *model.User
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &userRepoImpl{
-				db: tt.fields.db,
-			}
-			got, err := r.GetUserByID(tt.args.ctx, tt.args.id)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("userRepoImpl.GetUserByID() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("userRepoImpl.GetUserByID() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_userRepoImpl_GetUserByEmail(t *testing.T) {
-	type fields struct {
-		db *gorm.DB
-	}
-	type args struct {
-		ctx   context.Context
-		email string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *model.User
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &userRepoImpl{
-				db: tt.fields.db,
-			}
-			got, err := r.GetUserByEmail(tt.args.ctx, tt.args.email)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("userRepoImpl.GetUserByEmail() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("userRepoImpl.GetUserByEmail() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestUserRepoImpl_CreateUser(t *testing.T) {
 	ctx := context.Background()

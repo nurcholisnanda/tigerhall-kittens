@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
-	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
@@ -46,7 +45,7 @@ func (s *userService) Register(ctx context.Context, input *model.NewUser) (inter
 	// Check if user already exists
 	existingUser, _ := s.userRepo.GetUserByEmail(ctx, input.Email)
 	if existingUser != nil {
-		return nil, errorhandler.NewCustomError("Email already exists", http.StatusConflict)
+		return nil, errorhandler.NewCustomError("Email already exists", errorhandler.CONFLICT)
 	}
 
 	// Generate a Random Salt

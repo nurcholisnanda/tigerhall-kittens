@@ -17,6 +17,8 @@ func GetErrorCode(err error) ErrorCode {
 		return INVALID_INPUT
 	case *SightingTooCloseError:
 		return CONFLICT
+	case *CustomError:
+		return err.(*CustomError).Code
 	case *InternalServerError:
 		return INTERNAL_SERVER_ERROR
 	default:

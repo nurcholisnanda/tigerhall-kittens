@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -50,7 +49,7 @@ func (s *sightingService) ListSightings(ctx context.Context, tigerID string, lim
 			return nil, &errorhandler.NotFoundError{Message: "Tiger not found"}
 		} else {
 			logger.Logger(ctx).Error("Failed to list sightings for tiger:", err)
-			return nil, errorhandler.NewCustomError("Failed to list sightings", http.StatusInternalServerError)
+			return nil, errorhandler.NewCustomError("Failed to list sightings", errorhandler.INTERNAL_SERVER_ERROR)
 		}
 	}
 	return sightings, nil
@@ -64,7 +63,7 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 			return nil, errorhandler.NewNotFoundError("Tiger not found")
 		}
 		logger.Logger(ctx).Error("Unexpected error getting tiger by ID: ", err)
-		return nil, errorhandler.NewCustomError("Failed to retrieve tiger by ID", http.StatusInternalServerError)
+		return nil, errorhandler.NewCustomError("Failed to retrieve tiger by ID", errorhandler.INTERNAL_SERVER_ERROR)
 	}
 
 	if !isValidLatitude(input.Coordinate.Latitude) || !isValidLongitude(input.Coordinate.Longitude) {
@@ -75,7 +74,7 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {
 			logger.Logger(ctx).Error("Unexpected error getting tiger by ID: ", err)
-			return nil, errorhandler.NewCustomError("Failed to retrieve tiger by ID", http.StatusInternalServerError)
+			return nil, errorhandler.NewCustomError("Failed to retrieve tiger by ID", errorhandler.INTERNAL_SERVER_ERROR)
 		}
 	}
 
@@ -108,7 +107,7 @@ func (s *sightingService) CreateSighting(ctx context.Context, input *model.Sight
 
 	if err := s.sightingRepo.CreateSighting(ctx, newSighting); err != nil {
 		logger.Logger(ctx).Error("Unexpected error creating sighting: ", err)
-		return nil, errorhandler.NewCustomError("Failed to create sighting", http.StatusInternalServerError)
+		return nil, errorhandler.NewCustomError("Failed to create sighting", errorhandler.INTERNAL_SERVER_ERROR)
 	}
 
 	// Create a notification message\

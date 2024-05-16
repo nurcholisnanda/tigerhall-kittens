@@ -16,8 +16,8 @@ var (
 
 // Custom Errors
 type CustomError struct {
-	Message string `json:"message"`
-	Code    int    `json:"code"` // HTTP status code
+	Message string    `json:"message"`
+	Code    ErrorCode `json:"code"` // HTTP status code
 }
 
 func (e *CustomError) Error() string {
@@ -25,7 +25,7 @@ func (e *CustomError) Error() string {
 }
 
 // NewCustomError creates a new CustomError instance
-func NewCustomError(message string, code int) *CustomError {
+func NewCustomError(message string, code ErrorCode) *CustomError {
 	return &CustomError{Message: message, Code: code}
 }
 

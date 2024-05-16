@@ -32,6 +32,9 @@ func NewDatabase() (*database, error) {
 	if err != nil {
 		log.Panic(err)
 	}
+	if os.Getenv("DB_NAME") == "tigerhall_kittens_test" {
+		db.Migrator().DropTable("users", "tigers", "sightings")
+	}
 	return &database{
 		db: db,
 	}, nil

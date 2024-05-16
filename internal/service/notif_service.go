@@ -3,7 +3,6 @@ package service
 
 import (
 	"context"
-	"net/http"
 	"time"
 
 	"github.com/nurcholisnanda/tigerhall-kittens/internal/api/graph/model"
@@ -70,7 +69,7 @@ func (s *notificationService) FetchPreviousSighters(ctx context.Context, tigerID
 	userIDs, err := s.sightingRepo.ListUserCreatedSightingByTigerID(ctx, tigerID)
 	if err != nil {
 		logger.Logger(ctx).Error("Failed to fetch sightings by tiger ID: ", err)
-		return nil, errorhandler.NewCustomError("Failed to fetch previous sighters", http.StatusInternalServerError)
+		return nil, errorhandler.NewCustomError("Failed to fetch previous sighters", errorhandler.NOT_FOUND)
 	}
 
 	var previousSighters []*model.User
